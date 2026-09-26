@@ -276,7 +276,8 @@
                 h('strong', null, o.namn),
                 h('span', { class: 'vaxt-art-text' }, o.vattning.art),
                 h('span', { class: 'fin blockrad' },
-                  'Var ' + o.vattning.dagar + ':e dag · ' + (o.vattning.senast ? 'senast ' + dagFmt(o.vattning.senast) : 'aldrig vattnad'))
+                  'Var ' + o.vattning.dagar + ':e dag · ' + (o.vattning.senast ? 'senast ' + dagFmt(o.vattning.senast) : 'aldrig vattnad')),
+                karta.KULA[o.id] ? h('span', { class: 'fin blockrad' }, '🫧 ' + karta.KULA[o.id].mangd) : null
               ),
               h('span', { class: 'vaxt-nedrakning-text ' + o.vattning.klass }, o.vattning.text)
             )
@@ -466,6 +467,7 @@
           h('h2', null, o.namn),
           h('span', { class: 'badge st-' + a.status }, STATUSTEXT[a.status]),
           a.nastaVattning ? h('div', { class: 'vattna' }, vattnaText(a.nastaVattning, s && s.tid)) : null,
+          karta.KULA[o.id] ? h('div', { class: 'vattna' }, '🫧 Fyll kulan: ' + karta.KULA[o.id].mangd + ' var ' + karta.VATTNA[o.id] + ':e dag. ' + karta.KULA[o.id].rad) : null,
           a.status === 'pagar' && a.timerSlut
             ? h('span', { class: 'nedrakning stor', 'data-slut': String(a.timerSlut) }, formatTid(a.timerSlut - Date.now()))
             : null,

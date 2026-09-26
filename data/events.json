@@ -32,6 +32,16 @@
       "bild": "data/foton/20260919-120000-palettblad.jpg"
     },
     {
+      "id": "e-20260919-120000-vysj",
+      "tid": "2026-09-19T12:00:00+02:00",
+      "objektId": "schefflera",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Schefflera arboricola (paraplyaralia), flätad stam. Vattnad lör 19/9 (antaget). ¾ vattenkula (~180 ml) ca var 7:e dag, n",
+      "uppgift": "Vattna växterna",
+      "bild": "data/foton/20260919-120000-schefflera.jpg"
+    },
+    {
       "id": "e-20260926-085151-7lms",
       "tid": "2026-09-26T08:51:51+02:00",
       "objektId": "tvattmaskin",
@@ -513,5 +523,5 @@
       "tid": "2026-09-26T12:27:29+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T10:28:30.474Z"
+  "uppdaterad": "2026-09-26T10:34:47.493Z"
 }

@@ -199,6 +199,16 @@
       "notis": "Skorna uppställda på skohyllan i garderoben, jackorna upphängda",
       "uppgift": "Städa hallen och ställa in skorna",
       "bild": "data/foton/20260926-103454-hallen.jpg"
+    },
+    {
+      "id": "e-20260926-103525-c64e",
+      "tid": "2026-09-26T10:35:25+02:00",
+      "objektId": "hallen-hoger",
+      "status": "ren",
+      "person": "Ada",
+      "notis": "Höger sida: skor på hyllan och golvet, skokartonger staplade",
+      "uppgift": "Städa hallen och ställa in skorna",
+      "bild": "data/foton/20260926-103525-hallen-hoger.jpg"
     }
   ],
   "tilldelningar": {
@@ -230,10 +240,18 @@
   "objekt": [
     {
       "id": "hallen",
-      "namn": "Hallen vid ytterdörren (skorna)",
+      "namn": "Spegelgarderoben i hallen – vänster sida (skorna)",
       "emoji": "👟",
       "rum": "vardagsrum",
-      "x": 805,
+      "x": 790,
+      "y": 745
+    },
+    {
+      "id": "hallen-hoger",
+      "namn": "Spegelgarderoben i hallen – höger sida (skorna)",
+      "emoji": "👢",
+      "rum": "vardagsrum",
+      "x": 825,
       "y": 745
     }
   ],
@@ -323,5 +341,5 @@
       "tid": "2026-09-26T10:01:07+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T08:34:54.096Z"
+  "uppdaterad": "2026-09-26T08:35:25.337Z"
 }

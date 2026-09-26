@@ -4,7 +4,7 @@
   "kdf": {
     "namn": "PBKDF2-SHA256",
     "iterationer": 2000000,
-    "salt": "TsLpv5JqoCRAQH08f5UqBQ==",
+    "salt": "te0WI5FRwVE/PtbVVgl/5g==",
     "indata": "epost.trim().toLowerCase() + \"\\n\" + losenord"
   },
   "chiffer": {

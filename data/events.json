@@ -31,6 +31,16 @@
       "notis": "Disk, glas, förpackningar och post på bordet – städas nu",
       "uppgift": "Duka av och torka matbordet",
       "bild": "data/foton/20260926-091233-matbord.jpg"
+    },
+    {
+      "id": "e-20260926-091803-u1pp",
+      "tid": "2026-09-26T09:18:03+02:00",
+      "objektId": "koksbank",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Disk, kastrull, ugnsplåt och glas på bänken och spisen – städas nu",
+      "uppgift": "Diska och torka köksbänken",
+      "bild": "data/foton/20260926-091803-koksbank.jpg"
     }
   ],
   "tilldelningar": {},
@@ -49,7 +59,14 @@
       "etikett": "smutsig",
       "bild": "data/foton/20260926-091233-matbord.jpg",
       "tid": "2026-09-26T09:12:33+02:00"
+    },
+    {
+      "id": "t-20260926-091803-u1pp",
+      "objektId": "koksbank",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-091803-koksbank.jpg",
+      "tid": "2026-09-26T09:18:03+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T07:13:24.826Z"
+  "uppdaterad": "2026-09-26T07:18:28.108Z"
 }

@@ -71,6 +71,9 @@
     { id: 'badrumssopor', namn: 'Soptunnan i badrummet', emoji: '🗑️', rum: 'badrum', x: 862, y: 830 },
     { id: 'smutstvatt', namn: 'Smutstvätten (korgen)', emoji: '🧦', rum: 'badrum', x: 815, y: 762 },
     { id: 'vardagsrumsvaskor', namn: 'Väskorna i vardagsrummet', emoji: '🧳', rum: 'vardagsrum', x: 560, y: 560 },
+    { id: 'vaxter', namn: 'Orkidéerna & växterna', emoji: '🪴', rum: 'vardagsrum', x: 352, y: 212 },
+    { id: 'monstera', namn: 'Monsteran (balkongfönstret)', emoji: '🌱', rum: 'vardagsrum', x: 598, y: 232 },
+    { id: 'palettblad', namn: 'Palettbladet (Coleus)', emoji: '🍁', rum: 'vardagsrum', x: 662, y: 285 },
     { id: 'diskho', namn: 'Diskhon', emoji: '🚰', rum: 'vardagsrum', x: 600, y: 668 },
     { id: 'torkstallning', namn: 'Torkställningen (torr tvätt)', emoji: '👕', rum: 'badrum', x: 862, y: 762 },
   ];
@@ -81,8 +84,15 @@
   const PRIO = {
     vardagsrumsvaskor: 1, diskho: 1, matbord: 1, koksbank: 1, soffa: 1, badrumssopor: 1, smutstvatt: 1,
     badrumsbank: 2, torkstallning: 2, diskmaskin: 2, hallskap: 2,
+    vaxter: 2, monstera: 2, palettblad: 2,
     sovrum: 3, balkong: 3, lampbord: 3, kabelhorna: 3, tvattmaskin: 3,
   };
+
+  // Vattningsintervall i dagar: "ren" = vattnad; när intervallet gått blir objektet smutsigt (dags att vattna).
+  // Orkidéer (Phalaenopsis) inomhus ca 1 gång/vecka – när rötterna blivit silvergrå och barken är torr.
+  // Monstera ca var 7–10:e dag (när översta 3–5 cm jord är torra); vattenbubblan förlänger något.
+  // Palettblad (Coleus) är törstigt: jämnt fuktig jord, ca var 3:e dag vid elementet.
+  const VATTNA = { vaxter: 7, monstera: 10, palettblad: 3 };
 
   function el(namn, attr, forälder) {
     const e = document.createElementNS(NS, namn);
@@ -185,6 +195,7 @@
       }, lager);
       const titel = el('title', {}, g);
       titel.textContent = o.namn;
+      el('circle', { r: 46, class: 'objekt-yta' }, g);
       el('circle', { r: 30, class: 'objekt-puls' }, g);
       el('circle', { r: 19, class: 'objekt-ring' }, g);
       text(o.emoji || '📍', { y: 7, 'text-anchor': 'middle', class: 'objekt-emoji' }, g);
@@ -228,5 +239,5 @@
     return null;
   }
 
-  HV.karta = { RUM, ZONER, STANDARDOBJEKT, PRIO, byggGrund, rita, tillSvg, rumVid };
+  HV.karta = { RUM, ZONER, STANDARDOBJEKT, PRIO, VATTNA, byggGrund, rita, tillSvg, rumVid };
 })();

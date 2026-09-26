@@ -221,7 +221,7 @@
     const alla = hushall.allaHandelser();
     return S.objekt.map((o) => {
       const a = aktuell(o, alla);
-      return { ...o, status: a.status, timerSlut: a.timerSlut, senast: a.handelse, tilldelad: hushall.tilldelad(o.id) };
+      return { ...o, status: a.status, timerSlut: a.timerSlut, nastaVattning: a.nastaVattning, senast: a.handelse, tilldelad: hushall.tilldelad(o.id) };
     });
   }
 
@@ -259,6 +259,14 @@
     $('#synk').title = r.laddad ? 'data/events.json inläst (' + r.handelser.length + ' händelser)' : r.fel || '';
   }
 
+  /** "💧 Vattna lör 3 okt" / "💧 Dags att vattna" (+ senast vattnad i objektbladet). */
+  function vattnaText(nasta, senastIso) {
+    const dag = (ms) => new Date(ms).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+    const idag = new Date(); idag.setHours(0, 0, 0, 0);
+    const txt = nasta <= Date.now() ? '💧 Dags att vattna' : '💧 Vattna ' + (nasta - idag.getTime() < 864e5 ? 'idag' : dag(nasta));
+    return senastIso ? txt + ' (senast ' + dag(Date.parse(senastIso)) + ')' : txt;
+  }
+
   function ritaLista(vy) {
     const lista = $('#lista');
     const prio = (o) => karta.PRIO[o.id] || 3;
@@ -272,7 +280,8 @@
             h('span', { class: 'rad-emoji' }, o.emoji),
             h('span', { class: 'prio prio-' + prio(o), title: 'Prioritet inför gäster' }, 'P' + prio(o)),
             h('span', { class: 'rad-namn' }, o.namn,
-              o.tilldelad ? h('span', { class: 'tilldelad' }, ' → ' + o.tilldelad) : null
+              o.tilldelad ? h('span', { class: 'tilldelad' }, ' → ' + o.tilldelad) : null,
+              o.nastaVattning ? h('span', { class: 'vattna' }, ' · ' + vattnaText(o.nastaVattning)) : null
             ),
             o.status === 'pagar' && o.timerSlut
               ? h('span', { class: 'nedrakning', 'data-slut': String(o.timerSlut) }, formatTid(o.timerSlut - Date.now()))
@@ -395,6 +404,7 @@
         h('div', null,
           h('h2', null, o.namn),
           h('span', { class: 'badge st-' + a.status }, STATUSTEXT[a.status]),
+          a.nastaVattning ? h('div', { class: 'vattna' }, vattnaText(a.nastaVattning, s && s.tid)) : null,
           a.status === 'pagar' && a.timerSlut
             ? h('span', { class: 'nedrakning stor', 'data-slut': String(a.timerSlut) }, formatTid(a.timerSlut - Date.now()))
             : null,

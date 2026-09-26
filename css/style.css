@@ -222,3 +222,8 @@ dialog.blad::backdrop { background: rgba(4, 7, 12, .65); }
 .prio-1 { background: var(--rod); color: #fff; }
 .prio-2 { background: rgba(255, 197, 61, .25); color: var(--gul); }
 .prio-3 { background: rgba(160, 170, 190, .18); color: inherit; opacity: .75; }
+.objekt-yta { stroke: none; fill-opacity: .28; pointer-events: none; }
+.objekt.st-ren .objekt-yta { fill: var(--gron); fill-opacity: .38; }
+.objekt.st-pagar .objekt-yta { fill: var(--gul); }
+.objekt.st-smutsig .objekt-yta { fill: var(--rod); fill-opacity: .16; }
+.vattna { color: #5ab8ff; font-size: .8rem; }

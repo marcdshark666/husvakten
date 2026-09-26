@@ -2,6 +2,36 @@
   "version": 1,
   "handelser": [
     {
+      "id": "e-20260919-120000-6bzl",
+      "tid": "2026-09-19T12:00:00+02:00",
+      "objektId": "vaxter",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Vattnade i lördags (19/9). Orkidéer ca 1 gång/vecka när rötterna är silvergrå – doppa/vattna 10–15 min och låt rinna av.",
+      "uppgift": "Vattna växterna",
+      "bild": "data/foton/20260919-120000-vaxter.jpg"
+    },
+    {
+      "id": "e-20260919-120000-ifix",
+      "tid": "2026-09-19T12:00:00+02:00",
+      "objektId": "monstera",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Vattnade i lördags (19/9). Monstera var 7–10:e dag när översta 3–5 cm jord är torra; fyll på bubblan. Gula blad = ofta f",
+      "uppgift": "Vattna växterna",
+      "bild": "data/foton/20260919-120000-monstera.jpg"
+    },
+    {
+      "id": "e-20260919-120000-0fpq",
+      "tid": "2026-09-19T12:00:00+02:00",
+      "objektId": "palettblad",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Palettblad (Coleus). Vattnades senast lördag 19/9 (antaget). Håll jorden jämnt fuktig – ca var 3:e dag, när översta 1–2 ",
+      "uppgift": "Vattna växterna",
+      "bild": "data/foton/20260919-120000-palettblad.jpg"
+    },
+    {
       "id": "e-20260926-085151-7lms",
       "tid": "2026-09-26T08:51:51+02:00",
       "objektId": "tvattmaskin",
@@ -246,5 +276,5 @@
       "tid": "2026-09-26T10:01:07+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T08:01:40.325Z"
+  "uppdaterad": "2026-09-26T08:03:51.685Z"
 }

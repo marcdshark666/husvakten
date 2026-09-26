@@ -115,6 +115,14 @@
     if (h.status === 'pagar' && h.timerSlut && h.timerSlut <= (nu || Date.now())) {
       return { status: o.efterTimer === 'ren' ? 'ren' : 'smutsig', handelse: h, timerSlut: null, utgangen: true };
     }
+    const dagar = HV.karta && HV.karta.VATTNA ? HV.karta.VATTNA[o.id] : 0;
+    if (dagar && h.status === 'ren') {
+      const t = Date.parse(h.tid);
+      if (Number.isFinite(t)) {
+        const nasta = t + dagar * 864e5;
+        return { status: (nu || Date.now()) >= nasta ? 'smutsig' : 'ren', handelse: h, timerSlut: null, nastaVattning: nasta };
+      }
+    }
     return { status: h.status, handelse: h, timerSlut: h.status === 'pagar' ? h.timerSlut : null };
   }
 

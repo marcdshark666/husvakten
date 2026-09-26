@@ -111,6 +111,16 @@
       "notis": "Full med smutsig disk – startas nu. Riskokarkärlet och locket på bänken diskas för hand",
       "uppgift": "Starta diskmaskinen",
       "bild": "data/foton/20260926-093038-diskmaskin.jpg"
+    },
+    {
+      "id": "e-20260926-093135-6uqf",
+      "tid": "2026-09-26T09:31:35+02:00",
+      "objektId": "diskho",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "PRIO 1: disk i båda hoarna, matrester i silarna och ris på kanten",
+      "uppgift": "Töm silarna och diska ur hon",
+      "bild": "data/foton/20260926-093135-diskho.jpg"
     }
   ],
   "tilldelningar": {
@@ -129,6 +139,10 @@
     "diskmaskin": {
       "person": "Marc",
       "tid": "2026-09-26T07:31:21.431Z"
+    },
+    "diskho": {
+      "person": "Marc",
+      "tid": "2026-09-26T07:31:55.128Z"
     }
   },
   "objekt": [],
@@ -202,7 +216,14 @@
       "etikett": "fylld",
       "bild": "data/foton/20260926-093038-diskmaskin.jpg",
       "tid": "2026-09-26T09:30:38+02:00"
+    },
+    {
+      "id": "t-20260926-093135-6uqf",
+      "objektId": "diskho",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-093135-diskho.jpg",
+      "tid": "2026-09-26T09:31:35+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T07:31:21.431Z"
+  "uppdaterad": "2026-09-26T07:31:55.129Z"
 }

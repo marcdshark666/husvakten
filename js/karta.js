@@ -66,6 +66,8 @@
     { id: 'kabelhorna', namn: 'Kabelhörnan vid soffan', emoji: '🔌', rum: 'vardagsrum', x: 717, y: 495, zon: 'kabelhorna' },
     { id: 'matbord', namn: 'Matbordet', emoji: '🍴', rum: 'vardagsrum', x: 352, y: 332 },
     { id: 'koksbank', namn: 'Köksbänken', emoji: '🧽', rum: 'vardagsrum', x: 506, y: 630 },
+    { id: 'badrumsbank', namn: 'Badrumsbänken (Adas saker)', emoji: '🧴', rum: 'badrum', x: 818, y: 822 },
+    { id: 'hallskap', namn: 'Hallskåpet (Adas väskor)', emoji: '👜', rum: 'vardagsrum', x: 783, y: 700 },
   ];
 
   const RANG = { smutsig: 3, pagar: 2, ren: 1 };

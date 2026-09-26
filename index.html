@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1420">
+  <meta name="description" content="Husvakten håller koll på om hemmet är rent – karta, status och en bildbedömare som lär sig i webbläsaren.">
+  <title>Husvakten</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topp">
+    <div class="topp-rad">
+      <h1>🏠 Husvakten</h1>
+      <button id="knapp-meny" class="ikonknapp" aria-label="Meny" aria-haspopup="true">⋯</button>
+    </div>
+    <div class="person-rad">
+      <span class="fin">Jag är:</span>
+      <div id="personvaljare" class="segment" role="group" aria-label="Vem använder telefonen"></div>
+      <span id="synk" class="synk fin"></span>
+    </div>
+    <p id="oversikt" class="oversikt" aria-live="polite">Laddar …</p>
+    <div class="chips-rad">
+      <div id="chips" class="chips"></div>
+      <button id="knapp-rattvis" class="knapp liten">⚖️ Rättvis fördelning</button>
+    </div>
+    <nav class="flikar" role="tablist">
+      <button class="flik aktiv" role="tab" data-flik="hem" aria-selected="true">🏠 Hem</button>
+      <button class="flik" role="tab" data-flik="statistik" aria-selected="false">📊 Statistik</button>
+      <button class="flik" role="tab" data-flik="galleri" aria-selected="false">🖼 Galleri</button>
+    </nav>
+  </header>
+
+  <main class="layout" data-vy="hem">
+    <section class="kort karta-kort" aria-label="Karta">
+      <div id="placera-banner" class="placera-banner" hidden>
+        <span id="placera-text">Tryck på kartan där objektet ska stå</span>
+        <button id="placera-avbryt" class="knapp liten">Avbryt</button>
+      </div>
+      <svg id="karta" class="karta" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="teckenforklaring">
+        <span><i class="prick smutsig"></i>Smutsig</span>
+        <span><i class="prick pagar"></i>Pågår</span>
+        <span><i class="prick ren"></i>Ren</span>
+        <span><i class="prick zon"></i>Robotfri zon</span>
+      </div>
+    </section>
+
+    <section class="kort lista-kort" aria-label="Objekt">
+      <div class="lista-huvud">
+        <h2>Saker i hemmet</h2>
+        <button id="knapp-ny" class="knapp primar liten">+ Nytt objekt</button>
+      </div>
+      <ul id="lista" class="lista"></ul>
+    </section>
+  </main>
+
+  <main class="vy" data-vy="statistik" hidden>
+    <section class="kort">
+      <div class="lista-huvud">
+        <h2>Vem gjorde vad</h2>
+        <div id="period" class="segment" role="group" aria-label="Period">
+          <button data-period="vecka" class="aktiv">Veckan</button>
+          <button data-period="manad">Månaden</button>
+          <button data-period="allt">Allt</button>
+        </div>
+      </div>
+      <div id="statistik"></div>
+    </section>
+  </main>
+
+  <main class="vy" data-vy="galleri" hidden>
+    <section class="kort">
+      <h2>Galleri</h2>
+      <p class="fin">Varje bild som registrerats med en händelse – senast först.</p>
+      <div id="galleri" class="galleri"></div>
+    </section>
+  </main>
+
+  <!-- Bildvisare -->
+  <dialog id="visare" class="blad">
+    <div class="blad-inne" id="visare-inne"></div>
+  </dialog>
+
+  <!-- Rättvis fördelning -->
+  <dialog id="fordelning" class="blad">
+    <div class="blad-inne" id="fordelning-inne"></div>
+  </dialog>
+
+  <!-- Vem är du? -->
+  <dialog id="vem" class="blad">
+    <div class="blad-inne">
+      <h2>Vem är du?</h2>
+      <p class="fin">Varje händelse sparas med vem som gjorde den. Valet kommer ihåg på den här telefonen.</p>
+      <div class="knapprad tre" id="vem-knappar"></div>
+    </div>
+  </dialog>
+
+  <!-- Meny -->
+  <dialog id="meny" class="blad">
+    <div class="blad-inne">
+      <h2>Meny</h2>
+      <button class="knapp bred" data-meny="export">⬇️ Exportera träningsdata (JSON)</button>
+      <label class="knapp bred">⬆️ Importera träningsdata
+        <input id="import-fil" type="file" accept="application/json,.json" hidden>
+      </label>
+      <button class="knapp bred" data-meny="notiser">🔔 Tillåt påminnelser</button>
+      <button class="knapp bred" data-meny="forladda">🧠 Förladda bildmodellen</button>
+      <button class="knapp bred fara" data-meny="aterstall">↺ Återställ allt</button>
+      <p class="fin">Allt sparas bara i den här webbläsaren. Exportera då och då så försvinner inget.</p>
+      <button class="knapp bred" data-stang>Stäng</button>
+    </div>
+  </dialog>
+
+  <!-- Objektblad -->
+  <dialog id="blad" class="blad">
+    <div class="blad-inne" id="blad-inne"></div>
+  </dialog>
+
+  <!-- Nytt / ändra objekt -->
+  <dialog id="redigera" class="blad">
+    <form id="redigera-form" class="blad-inne" method="dialog">
+      <h2 id="redigera-titel">Nytt objekt</h2>
+      <label class="falt">Namn
+        <input name="namn" required maxlength="40" autocomplete="off" placeholder="t.ex. Tvättmaskinen">
+      </label>
+      <label class="falt">Ikon (emoji)
+        <input name="emoji" maxlength="4" autocomplete="off" placeholder="🧺">
+      </label>
+      <label class="falt">Sort
+        <select name="typ">
+          <option value="vanlig">Vanlig (ren / smutsig)</option>
+          <option value="disk">Maskin – disk/tvätt (tom / fylld / startad)</option>
+        </select>
+      </label>
+      <label class="falt">Timer som standard (minuter)
+        <input name="timerMin" type="number" min="1" max="1440" value="60">
+      </label>
+      <label class="falt">När timern går ut
+        <select name="efterTimer">
+          <option value="ren">Markera som REN</option>
+          <option value="paminn">Påminn mig (markera som SMUTSIG)</option>
+        </select>
+      </label>
+      <div class="knapprad">
+        <button type="button" class="knapp" data-stang>Avbryt</button>
+        <button type="submit" class="knapp primar" value="ok">Spara och placera</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Timerlängd -->
+  <dialog id="timer-dialog" class="blad">
+    <form id="timer-form" class="blad-inne" method="dialog">
+      <h2>Hur länge?</h2>
+      <p id="timer-fraga" class="fin"></p>
+      <div class="snabbval" id="timer-snabb"></div>
+      <label class="falt">Minuter
+        <input name="min" type="number" min="1" max="1440" required>
+      </label>
+      <div class="knapprad">
+        <button type="button" class="knapp" data-stang>Avbryt</button>
+        <button type="submit" class="knapp primar" value="ok">Starta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/lagring.js"></script>
+  <script src="js/karta.js"></script>
+  <script src="js/ml.js"></script>
+  <script src="js/hushall.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

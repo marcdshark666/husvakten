@@ -1,0 +1,12 @@
+{
+  "name": "husvakten",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Husvakten – håller koll på om hemmet är rent. Statisk sajt; node behövs bara för verktyg/logga.js.",
+  "scripts": {
+    "logga": "node verktyg/logga.js"
+  },
+  "dependencies": {
+    "sharp": "^0.34.0"
+  }
+}

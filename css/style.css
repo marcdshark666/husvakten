@@ -1,0 +1,220 @@
+/* Husvakten – mobil först (Samsung Fold: ~344 px yttre skärm, ~700+ px inre). */
+:root {
+  --bg: #0f1420;
+  --yta: #171e2d;
+  --yta2: #1f2839;
+  --kant: #2c3750;
+  --text: #e8edf6;
+  --dampad: #9aa6bd;
+  --primar: #4f8cff;
+  --rod: #ff4d5e;
+  --gul: #ffc53d;
+  --gron: #3ddc84;
+  --zon: #ff5a4f;
+  --rum-bla: #5d8fd8;
+  --rum-gul: #d9b24a;
+  --rum-orange: #d9774f;
+  --rum-balkong: #6b7a93;
+  --radie: 14px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h1 { font-size: 1.35rem; }
+h2 { font-size: 1.1rem; }
+h3 { font-size: .95rem; color: var(--dampad); font-weight: 600; margin-bottom: 8px; }
+
+/* ---------- Topp ---------- */
+.topp { padding: 14px 16px 10px; }
+.topp-rad { display: flex; align-items: center; justify-content: space-between; }
+.oversikt { margin: 6px 0 8px; font-size: 1.25rem; font-weight: 700; }
+.oversikt.atgard { color: var(--rod); }
+.oversikt.klar { color: var(--gron); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font-size: .8rem; padding: 3px 10px; border-radius: 99px; background: var(--yta2); border: 1px solid var(--kant); }
+.chip.smutsig { color: var(--rod); }
+.chip.pagar { color: var(--gul); }
+.chip.ren { color: var(--gron); }
+
+/* ---------- Layout ---------- */
+.layout { display: grid; gap: 12px; padding: 0 16px 24px; }
+@media (min-width: 700px) {
+  .layout { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+  .lista-kort { position: sticky; top: 12px; }
+}
+.kort { background: var(--yta); border: 1px solid var(--kant); border-radius: var(--radie); padding: 12px; }
+
+/* ---------- Karta ---------- */
+.karta-kort { position: relative; }
+.karta { width: 100%; height: auto; display: block; max-height: 72vh; touch-action: manipulation; }
+.karta.placerar { cursor: crosshair; outline: 2px dashed var(--primar); outline-offset: 4px; border-radius: 8px; }
+.rum { stroke: #3a4a66; stroke-width: 5; stroke-linejoin: round; transition: fill .4s; }
+.rum-bla { fill: var(--rum-bla); fill-opacity: .55; }
+.rum-gul { fill: var(--rum-gul); fill-opacity: .6; }
+.rum-orange { fill: var(--rum-orange); fill-opacity: .7; }
+.rum-balkong { fill: var(--rum-balkong); fill-opacity: .45; }
+.rum.st-smutsig { fill: var(--rod); fill-opacity: .28; animation: rumpuls 2.2s ease-in-out infinite; }
+.rum.st-pagar { fill: var(--gul); fill-opacity: .3; }
+.rum.st-ren { fill: var(--gron); fill-opacity: .22; }
+@keyframes rumpuls { 50% { fill-opacity: .45; } }
+
+.mobel { fill: #2a3448; stroke: #8fa0bf; stroke-width: 2; opacity: .8; }
+.mobel-lat { fill: #3a4660; stroke: #8fa0bf; stroke-width: 1.5; opacity: .8; }
+.laddstation rect { fill: #1d6b52; stroke: var(--gron); stroke-width: 2; }
+.ladd-ikon { font-size: 20px; }
+.rum-etikett { fill: #fff; font-size: 26px; font-weight: 700; text-anchor: middle; paint-order: stroke; stroke: rgba(10, 14, 22, .7); stroke-width: 5px; pointer-events: none; }
+.rum-etikett.liten { font-size: 20px; }
+.rum-etikett.minst { font-size: 15px; font-weight: 600; }
+
+.streck-linje { stroke: var(--zon); stroke-width: 3; opacity: .55; }
+.zon-fyllning { fill: url(#streck); }
+.zon-streck { fill: none; stroke: var(--zon); stroke-width: 4; stroke-dasharray: 12 8; }
+.zon.st-smutsig .zon-fyllning { fill: var(--rod); fill-opacity: .35; animation: rumpuls 1.6s ease-in-out infinite; }
+.zon.st-pagar .zon-fyllning { fill: var(--gul); fill-opacity: .35; }
+.zon.st-ren .zon-fyllning { fill: var(--gron); fill-opacity: .25; }
+.zon { pointer-events: none; }
+
+.objekt { cursor: pointer; outline: none; }
+.objekt-ring { fill: #10151f; stroke-width: 4; }
+.objekt-puls { fill: none; stroke-width: 0; }
+.objekt-emoji { font-size: 22px; pointer-events: none; }
+.objekt-namn { fill: #fff; font-size: 15px; font-weight: 600; paint-order: stroke; stroke: rgba(10, 14, 22, .85); stroke-width: 4px; pointer-events: none; }
+.objekt.st-smutsig .objekt-ring { stroke: var(--rod); }
+.objekt.st-pagar .objekt-ring { stroke: var(--gul); }
+.objekt.st-ren .objekt-ring { stroke: var(--gron); }
+.objekt.st-smutsig .objekt-puls { fill: var(--rod); transform-box: fill-box; transform-origin: center; animation: puls 1.6s ease-out infinite; }
+.objekt.st-pagar .objekt-puls { fill: var(--gul); opacity: .25; }
+.objekt.valt .objekt-ring, .objekt:focus-visible .objekt-ring { stroke: #fff; stroke-width: 6; }
+@keyframes puls { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .objekt-puls, .rum, .zon-fyllning { animation: none !important; }
+}
+
+.teckenforklaring { display: flex; flex-wrap: wrap; gap: 12px; font-size: .8rem; color: var(--dampad); margin-top: 8px; }
+.prick { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.prick.smutsig { background: var(--rod); }
+.prick.pagar { background: var(--gul); }
+.prick.ren { background: var(--gron); }
+.prick.zon { border-radius: 2px; border: 2px dashed var(--zon); }
+
+.placera-banner { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--primar); color: #fff; padding: 8px 10px; border-radius: 10px; margin-bottom: 8px; font-weight: 600; }
+.placera-banner[hidden] { display: none; }
+
+/* ---------- Lista ---------- */
+.lista-huvud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+.lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rad { width: 100%; display: flex; align-items: center; gap: 10px; background: var(--yta2); color: var(--text); border: 1px solid var(--kant); border-left: 5px solid var(--kant); border-radius: 10px; padding: 10px; font: inherit; text-align: left; cursor: pointer; min-height: 48px; }
+.rad.st-smutsig { border-left-color: var(--rod); }
+.rad.st-pagar { border-left-color: var(--gul); }
+.rad.st-ren { border-left-color: var(--gron); }
+.rad-emoji { font-size: 1.3rem; }
+.rad-namn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tom-lista { color: var(--dampad); padding: 8px; }
+
+.badge { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: .03em; }
+.badge.st-smutsig { background: rgba(255, 77, 94, .18); color: var(--rod); }
+.badge.st-pagar { background: rgba(255, 197, 61, .18); color: var(--gul); }
+.badge.st-ren { background: rgba(61, 220, 132, .16); color: var(--gron); }
+.nedrakning { font-variant-numeric: tabular-nums; color: var(--gul); font-weight: 700; font-size: .9rem; }
+.nedrakning.stor { display: block; font-size: 1.6rem; margin-top: 4px; }
+.st-text.smutsig { color: var(--rod); }
+.st-text.pagar { color: var(--gul); }
+.st-text.ren { color: var(--gron); }
+
+/* ---------- Knappar & fält ---------- */
+.knapp { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--kant); background: var(--yta2); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; text-align: center; }
+.knapp:active { transform: scale(.98); }
+.knapp:disabled { opacity: .5; }
+.knapp.primar { background: var(--primar); border-color: var(--primar); color: #fff; }
+.knapp.fara { color: var(--rod); }
+.knapp.liten { min-height: 36px; padding: 6px 10px; font-size: .9rem; }
+.knapp.bred { width: 100%; margin-top: 8px; }
+.knapp.st-knapp.smutsig { border-color: var(--rod); color: var(--rod); }
+.knapp.st-knapp.pagar { border-color: var(--gul); color: var(--gul); }
+.knapp.st-knapp.ren { border-color: var(--gron); color: var(--gron); }
+.ikonknapp { background: var(--yta2); border: 1px solid var(--kant); color: var(--text); width: 44px; height: 44px; border-radius: 12px; font-size: 1.4rem; cursor: pointer; }
+.knapprad { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.knapprad > .knapp { flex: 1 1 auto; }
+.knapprad.tre > .knapp { flex: 1 1 0; }
+
+.falt { display: grid; gap: 4px; margin-top: 10px; font-size: .9rem; color: var(--dampad); }
+.falt input, .falt select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--kant); border-radius: 10px; padding: 10px; min-height: 44px; }
+
+.fin { color: var(--dampad); font-size: .88rem; margin: 6px 0; }
+.blockrad { display: block; }
+.fel { color: var(--rod); }
+.ok { color: var(--gron); font-weight: 600; }
+
+/* ---------- Bottenblad (dialog) ---------- */
+dialog.blad { border: none; padding: 0; background: transparent; color: var(--text); width: 100%; max-width: 560px; margin: auto auto 0; max-height: 92vh; }
+dialog.blad::backdrop { background: rgba(4, 7, 12, .65); }
+.blad-inne { background: var(--yta); border: 1px solid var(--kant); border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); max-height: 92vh; overflow-y: auto; }
+@media (min-width: 700px) {
+  dialog.blad { margin: auto; }
+  .blad-inne { border-radius: 18px; }
+}
+.blad-titel { display: flex; gap: 12px; align-items: flex-start; }
+.blad-emoji { font-size: 2.2rem; line-height: 1; }
+.blad-titel h2 { margin-bottom: 4px; }
+.sektion { border-top: 1px solid var(--kant); margin-top: 14px; padding-top: 12px; }
+.snabbval { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.bedomning { margin-top: 10px; }
+.bedomning-rad { display: flex; gap: 10px; align-items: center; }
+.forhand { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex: none; }
+.etikett-rader { display: grid; gap: 10px; }
+.etikett-namn { font-size: .9rem; margin-bottom: 4px; }
+.miniatyrer { display: flex; flex-wrap: wrap; gap: 6px; }
+.miniatyr { position: relative; width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: var(--yta2); display: grid; place-items: center; }
+.miniatyr img { width: 100%; height: 100%; object-fit: cover; }
+.miniatyr-bort { position: absolute; top: 0; right: 0; width: 20px; height: 20px; border: none; border-radius: 0 0 0 6px; background: rgba(0, 0, 0, .65); color: #fff; font-size: 11px; cursor: pointer; padding: 0; }
+
+/* ---------- Toast ---------- */
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #0b0f17; border: 1px solid var(--kant); color: var(--text); padding: 10px 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, .5); z-index: 50; max-width: calc(100% - 32px); font-weight: 600; }
+.toast[hidden] { display: none; }
+.rum-badrum { fill: #4fb3c9; fill-opacity: .55; }
+
+/* ---------- Hushållet: person, flikar, statistik, galleri ---------- */
+.person-rad { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.synk { margin-left: auto; }
+.segment { display: inline-flex; background: var(--yta2); border: 1px solid var(--kant); border-radius: 10px; padding: 3px; gap: 3px; flex-wrap: wrap; }
+.segment button { font: inherit; font-weight: 600; font-size: .9rem; color: var(--dampad); background: transparent; border: 0; border-radius: 8px; padding: 6px 12px; min-height: 34px; cursor: pointer; }
+.segment button.aktiv { background: var(--primar); color: #fff; }
+.chips-rad { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.flikar { display: flex; gap: 6px; margin-top: 10px; }
+.flik { flex: 1; font: inherit; font-weight: 600; font-size: .92rem; color: var(--dampad); background: var(--yta); border: 1px solid var(--kant); border-radius: 10px; padding: 8px 6px; min-height: 42px; cursor: pointer; }
+.flik.aktiv { color: #fff; border-color: var(--primar); background: rgba(79, 140, 255, .18); }
+.vy { padding: 0 16px 24px; max-width: 900px; margin: 0 auto; }
+[hidden] { display: none !important; }
+.tilldelad { color: var(--primar); font-size: .8rem; font-weight: 600; }
+.historik { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: .9rem; }
+.historik li { background: var(--yta2); border-radius: 8px; padding: 6px 8px; }
+.mest { font-size: 1.1rem; font-weight: 700; margin: 10px 0; }
+.staplar { display: grid; gap: 8px; margin-bottom: 10px; }
+.stapel-rad { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 8px; }
+.stapel-rad.liten { font-size: .85rem; }
+.stapel-namn { font-weight: 600; }
+.stapel-spar { position: relative; background: var(--yta2); border-radius: 6px; height: 26px; overflow: hidden; }
+.stapel-rad.liten .stapel-spar { height: 18px; }
+.stapel { height: 100%; border-radius: 6px; transition: width .4s; min-width: 2px; }
+.stapel.p0 { background: linear-gradient(90deg, #4f8cff, #7fb0ff); }
+.stapel.p1 { background: linear-gradient(90deg, #e45bb0, #ff8fd0); }
+.stapel-tal { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-weight: 700; font-size: .85rem; }
+.objekt-stat { background: var(--yta2); border-radius: 10px; padding: 8px; display: grid; gap: 4px; }
+.objekt-stat .stapel-spar { background: var(--bg); }
+.objekt-stat-namn { font-weight: 600; font-size: .9rem; }
+.galleri { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.galleri-kort { display: grid; padding: 0; border: 1px solid var(--kant); background: var(--yta2); color: var(--text); border-radius: 10px; overflow: hidden; cursor: pointer; text-align: left; font: inherit; }
+.galleri-kort img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
+.galleri-text { display: grid; gap: 2px; padding: 6px 8px; font-size: .85rem; }
+.galleri-text .badge { justify-self: start; }
+.visare-bild { width: 100%; max-height: 65vh; object-fit: contain; border-radius: 10px; background: #000; }

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "handelser": [
+    {
+      "id": "e-20260926-085151-7lms",
+      "tid": "2026-09-26T08:51:51+02:00",
+      "objektId": "tvattmaskin",
+      "status": "pagar",
+      "person": "Marc",
+      "timerMin": 43,
+      "timerSlut": "2026-09-26T09:34:51+02:00",
+      "notis": "30° Mörk tvätt",
+      "bild": "data/foton/20260926-085151-tvattmaskin.jpg"
+    },
+    {
+      "id": "e-20260926-085808-wryy",
+      "tid": "2026-09-26T08:58:08+02:00",
+      "objektId": "diskmaskin",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Plockade ur ren disk",
+      "uppgift": "Plocka ur disken",
+      "bild": "data/foton/20260926-085808-diskmaskin.jpg"
+    }
+  ],
+  "tilldelningar": {},
+  "objekt": [],
+  "traning": [
+    {
+      "id": "t-20260926-085808-wryy",
+      "objektId": "diskmaskin",
+      "etikett": "renfull",
+      "bild": "data/foton/20260926-085808-diskmaskin.jpg",
+      "tid": "2026-09-26T08:58:08+02:00"
+    }
+  ],
+  "uppdaterad": "2026-09-26T06:59:44.617Z"
+}

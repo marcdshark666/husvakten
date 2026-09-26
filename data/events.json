@@ -21,6 +21,16 @@
       "notis": "Plockade ur ren disk",
       "uppgift": "Plocka ur disken",
       "bild": "data/foton/20260926-085808-diskmaskin.jpg"
+    },
+    {
+      "id": "e-20260926-091233-vas0",
+      "tid": "2026-09-26T09:12:33+02:00",
+      "objektId": "matbord",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Disk, glas, förpackningar och post på bordet – städas nu",
+      "uppgift": "Duka av och torka matbordet",
+      "bild": "data/foton/20260926-091233-matbord.jpg"
     }
   ],
   "tilldelningar": {},
@@ -32,7 +42,14 @@
       "etikett": "renfull",
       "bild": "data/foton/20260926-085808-diskmaskin.jpg",
       "tid": "2026-09-26T08:58:08+02:00"
+    },
+    {
+      "id": "t-20260926-091233-vas0",
+      "objektId": "matbord",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-091233-matbord.jpg",
+      "tid": "2026-09-26T09:12:33+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T06:59:44.617Z"
+  "uppdaterad": "2026-09-26T07:13:24.826Z"
 }

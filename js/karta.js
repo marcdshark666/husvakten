@@ -64,6 +64,7 @@
     { id: 'lampbord', namn: 'Lampbordet (luftrenaren)', emoji: '💡', rum: 'vardagsrum', x: 498, y: 200, zon: 'lampbord' },
     { id: 'sovrum', namn: 'Sovrummet (kablar)', emoji: '🛏️', rum: 'sovrum', x: 905, y: 345, zon: 'sovrumKablar' },
     { id: 'kabelhorna', namn: 'Kabelhörnan vid soffan', emoji: '🔌', rum: 'vardagsrum', x: 717, y: 495, zon: 'kabelhorna' },
+    { id: 'matbord', namn: 'Matbordet', emoji: '🍴', rum: 'vardagsrum', x: 352, y: 332 },
   ];
 
   const RANG = { smutsig: 3, pagar: 2, ren: 1 };

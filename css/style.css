@@ -264,3 +264,61 @@ body.last > :not(#inloggning):not(script) { display: none !important; }
 .inloggning-kort input:focus { outline: 2px solid var(--primar); outline-offset: 1px; }
 .inloggning-fel { color: var(--rod); font-weight: 600; }
 .inloggning-kort .liten-text { font-size: .8rem; }
+
+/* ---------- Robotfliken (Roborock) ---------- */
+.robot-vy { display: grid; gap: 12px; }
+.robot-lage { font-size: .85rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: var(--yta2); border: 1px solid var(--kant); color: var(--dampad); }
+.robot-lage.laddar { color: var(--gron); border-color: rgba(61, 220, 132, .4); }
+.robot-lage.stadar { color: var(--gul); border-color: rgba(255, 197, 61, .4); }
+.robot-lage.fel { color: var(--rod); border-color: rgba(255, 77, 94, .5); }
+.robot-batteri { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; margin: 10px 0 4px; }
+.robot-batteri-ikon { font-size: 1.3rem; }
+.robot-status .stapel.bra { background: linear-gradient(90deg, #2fb86c, var(--gron)); }
+.robot-status .stapel.mellan { background: linear-gradient(90deg, #d9a92f, var(--gul)); }
+.robot-status .stapel.lag { background: linear-gradient(90deg, #d93a4a, var(--rod)); }
+.robot-fel { color: var(--rod); font-weight: 700; margin: 6px 0; }
+.robot-siffror { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0 12px; }
+.robot-siffra { background: var(--yta2); border-radius: 10px; padding: 8px 6px; text-align: center; display: grid; gap: 0; }
+.robot-siffra strong { font-size: 1.05rem; }
+.robot-siffra .fin { margin: 0; font-size: .75rem; }
+.robot-delar-rubrik { margin-top: 4px; }
+.robot-delar { gap: 10px; }
+.robot-del { display: grid; gap: 4px; }
+.robot-del-namn { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: .9rem; }
+.robot-del-namn .fin { margin: 0; font-size: .78rem; white-space: nowrap; }
+.robot-del.varna .robot-del-namn > span:first-child { color: var(--rod); }
+.robot-del .stapel-spar { height: 20px; }
+.robot-del .stapel-tal { font-size: .78rem; }
+.robot-vy .lista-huvud { flex-wrap: wrap; gap: 8px; }
+.robot-knappar { display: flex; gap: 6px; flex-wrap: wrap; }
+.robot-vaxel.aktiv { border-color: var(--primar); background: rgba(79, 140, 255, .22); color: #fff; }
+.robot-karta-ruta { position: relative; width: 100%; max-height: 75vh; margin: 10px auto 8px; background: #0b1019; border-radius: 10px; overflow: hidden; }
+.robot-karta-bild, .robot-overlagg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.robot-karta-bild { object-fit: contain; image-rendering: pixelated; user-select: none; -webkit-user-select: none; }
+.robot-overlagg { overflow: visible; }
+.r-rum polygon { fill: none; stroke-opacity: .55; stroke-width: 2; stroke-linejoin: round; }
+.r-nogo { fill: rgba(255, 90, 79, .16); stroke: var(--zon); stroke-dasharray: 10 7; }
+.r-nomop { fill: rgba(90, 184, 255, .12); stroke: #5ab8ff; stroke-dasharray: 10 7; }
+.r-vvagg { stroke: var(--zon); stroke-linecap: round; }
+.r-vag polyline { fill: none; stroke: #7fd0ff; stroke-opacity: .75; stroke-linejoin: round; stroke-linecap: round; }
+.r-etiketter text { fill: #fff; font-weight: 800; text-anchor: middle; paint-order: stroke; stroke: rgba(10, 14, 22, .85); stroke-linejoin: round; }
+.r-hinder circle { fill: rgba(255, 165, 61, .92); stroke: #fff; }
+.r-hinder text, .r-punkter text { text-anchor: middle; }
+.r-ladd circle { fill: var(--gron); stroke: #fff; }
+.r-robot circle { fill: #f2f5fb; stroke: var(--primar); }
+.r-robot line { stroke: var(--primar); stroke-linecap: round; }
+.dolj-vag .r-vag, .dolj-hinder .r-hinder { display: none; }
+.robot-3d { margin: 10px 0 8px; background: #0b1019; border-radius: 10px; overflow: hidden; min-height: 200px; }
+.robot-3d-canvas { display: block; width: 100%; touch-action: none; }
+.robot-3d-info { color: var(--dampad); text-align: center; padding: 16px; margin: 0; font-size: .9rem; }
+.robot-3d-info.liten { padding: 6px 8px 8px; font-size: .78rem; }
+.robot-historik li strong { font-weight: 700; }
+@media (min-width: 700px) {
+  .robot-vy { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: start; max-width: 1200px; }
+  .robot-karta-kort { grid-column: 2; grid-row: 1 / span 2; }
+}
+
+@media (max-width: 400px) {
+  .flikar { gap: 4px; }
+  .flik { font-size: .8rem; padding: 6px 2px; }
+}

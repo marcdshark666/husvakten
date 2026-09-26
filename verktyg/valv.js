@@ -15,6 +15,10 @@
  *   node verktyg/valv.js las        skriv ut dekrypterad events.json på stdout
  *   node verktyg/valv.js migrera    kryptera data/events.json + data/foton/*.jpg in i valvet (en gång)
  *   node verktyg/valv.js foto <namn> <utfil>   dekryptera en bild till en lokal fil (utanför repot!)
+ *   node verktyg/valv.js skriv <logiskt-namn> <fil>   kryptera en fil in i valvet, t.ex. robot/karta.png
+ *        → data/valv/robot/karta.png.enc (AAD = "robot/karta.png"). Källfilen får inte ligga i repot.
+ *   node verktyg/valv.js lasfil <logiskt-namn> [<utfil>]   dekryptera en valvfil (utfil utanför repot;
+ *        utan utfil skrivs bara storlek + sha256 ut)
  *   node verktyg/valv.js byt-losen [--iter N] [--gammalt-fil <sökväg>]
  *        kryptera om HELA valvet med nytt salt (+ nya iterationer, standard 2 000 000).
  *        Gammalt lösenord: ~/.husvakten/losen.txt (eller --gammalt-fil). Nytt: ~/.husvakten/losen-nytt.txt
@@ -38,6 +42,9 @@ const ITERATIONER_MAX = 10000000;  // övre gräns så en trasig meta.json inte 
 const ITERATIONER_STANDARD = 2000000;
 const FORMAT_VERSION = 1;
 const NAMN_RE = /^[\w.-]+\.jpe?g$/i;
+// Generiska valvfiler (robotfliken m.m.): <katalog>/<namn>.<ändelse>, bara kända kataloger.
+const GENERISKA_KATALOGER = ['robot'];
+const GENERISK_RE = /^(robot)\/[\w-]+\.(png|json)$/;
 
 function lasLosenFil(losenFil) {
   if (!fs.existsSync(losenFil)) throw new Error('saknar ' + losenFil);
@@ -151,6 +158,27 @@ function lasFoto(nyckel, namn) {
   return dekryptera(nyckel, fs.readFileSync(fotoFil(namn)), 'foton/' + namn);
 }
 
+/** Sökväg till en generisk valvfil, t.ex. "robot/karta.png" → data/valv/robot/karta.png.enc */
+function generiskFil(namn) {
+  if (!GENERISK_RE.test(namn)) throw new Error('ogiltigt logiskt namn: ' + namn + ' (tillåtet: robot/<namn>.png|json)');
+  return path.join(VALV, ...namn.split('/')) + '.enc';
+}
+
+function skrivFil(nyckel, namn, buf) {
+  const enc = kryptera(nyckel, buf, namn);
+  if (!dekryptera(nyckel, enc, namn).equals(buf)) throw new Error('återläsning misslyckades: ' + namn);
+  skrivAtomiskt(generiskFil(namn), enc);
+}
+
+function lasFil(nyckel, namn) {
+  return dekryptera(nyckel, fs.readFileSync(generiskFil(namn)), namn);
+}
+
+function iRepot(fil) {
+  const p = path.resolve(fil).toLowerCase();
+  return p === ROT.toLowerCase() || p.startsWith(ROT.toLowerCase() + path.sep);
+}
+
 /** Engångsmigrering: plaintext → valv. Tar inte bort plaintext (gör det med git rm efter kontroll). */
 function migrera() {
   const plainEvents = path.join(ROT, 'data', 'events.json');
@@ -180,6 +208,14 @@ function valvFiler() {
   for (const f of fs.readdirSync(VALV)) {
     const full = path.join(VALV, f);
     if (fs.statSync(full).isDirectory()) {
+      if (GENERISKA_KATALOGER.includes(f)) {
+        for (const g of fs.readdirSync(full)) {
+          const namn = f + '/' + g.replace(/\.enc$/, '');
+          if (!g.endsWith('.enc') || !GENERISK_RE.test(namn)) throw new Error('okänd fil i valvet: ' + f + '/' + g + ' – vägrar fortsätta');
+          filer.push({ fil: path.join(full, g), namn });
+        }
+        continue;
+      }
       if (f !== 'foton') throw new Error('okänd katalog i valvet: ' + f + ' – vägrar fortsätta');
       continue;
     }
@@ -238,7 +274,11 @@ function bytLosen({ iter = ITERATIONER_STANDARD, gammaltFil } = {}) {
   const backup = path.join(HEMLIG_KATALOG, 'valv-backup-' + stampel);
   fs.mkdirSync(path.join(backup, 'foton'), { recursive: true });
   fs.copyFileSync(META, path.join(backup, 'meta.json'));
-  for (const f of klart) fs.writeFileSync(path.join(backup, f.namn === 'events.json' ? 'events.json.enc' : f.namn + '.enc'), f.gammalBuf);
+  for (const f of klart) {
+    const ut = path.join(backup, ...(f.namn === 'events.json' ? 'events.json.enc' : f.namn + '.enc').split('/'));
+    fs.mkdirSync(path.dirname(ut), { recursive: true });
+    fs.writeFileSync(ut, f.gammalBuf);
+  }
 
   // 4. Skriv allt till .tmp, byt sedan (meta sist)
   for (const f of klart) fs.writeFileSync(f.fil + '.tmp', f.nyBuf);
@@ -275,7 +315,7 @@ function flagga(args, namn) {
   return args[i + 1];
 }
 
-module.exports = { ROT, VALV, oppna, bytLosen, lasEvents, skrivEvents, skrivFoto, lasFoto, kryptera, dekryptera, harledNyckel, NAMN_RE };
+module.exports = { ROT, VALV, oppna, bytLosen, lasEvents, skrivEvents, skrivFoto, lasFoto, skrivFil, lasFil, valvFiler, kryptera, dekryptera, harledNyckel, NAMN_RE, GENERISK_RE };
 
 if (require.main === module) {
   try {
@@ -291,12 +331,30 @@ if (require.main === module) {
       if (ut.startsWith(ROT + path.sep)) throw new Error('skriv inte dekrypterade bilder i repot');
       fs.writeFileSync(ut, lasFoto(nyckel, rest[0]));
       console.log('skrev ' + ut);
+    } else if (cmd === 'skriv' && rest.length === 2) {
+      const [namn, kalla] = rest;
+      if (iRepot(kalla)) throw new Error('källfilen ligger i repot – lägg okrypterade filer utanför repot');
+      const { nyckel } = oppna();
+      const buf = fs.readFileSync(path.resolve(kalla));
+      skrivFil(nyckel, namn, buf);
+      if (!lasFil(nyckel, namn).equals(buf)) throw new Error('verifiering från disk misslyckades: ' + namn);
+      console.log('krypterade ' + namn + ' (' + buf.length + ' byte) → ' + path.relative(ROT, generiskFil(namn)).split(path.sep).join('/'));
+    } else if (cmd === 'lasfil' && (rest.length === 1 || rest.length === 2)) {
+      const { nyckel } = oppna();
+      const buf = lasFil(nyckel, rest[0]);
+      if (rest[1]) {
+        if (iRepot(rest[1])) throw new Error('skriv inte dekrypterade filer i repot');
+        fs.writeFileSync(path.resolve(rest[1]), buf);
+        console.log('skrev ' + path.resolve(rest[1]));
+      } else {
+        console.log(JSON.stringify({ namn: rest[0], byte: buf.length, sha256: crypto.createHash('sha256').update(buf).digest('hex') }));
+      }
     } else if (cmd === 'byt-losen') {
       const iterText = flagga(rest, '--iter');
       const iter = iterText === undefined ? ITERATIONER_STANDARD : Number(iterText);
       console.log(JSON.stringify({ ok: true, ...bytLosen({ iter, gammaltFil: flagga(rest, '--gammalt-fil') }) }, null, 2));
     } else {
-      console.error('användning: node verktyg/valv.js las | migrera | foto <namn> <utfil> | byt-losen [--iter N] [--gammalt-fil <sökväg>]');
+      console.error('användning: node verktyg/valv.js las | migrera | foto <namn> <utfil> | skriv <logiskt-namn> <fil> | lasfil <logiskt-namn> [<utfil>] | byt-losen [--iter N] [--gammalt-fil <sökväg>]');
       process.exit(2);
     }
   } catch (e) {

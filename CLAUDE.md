@@ -11,7 +11,10 @@ Hushållet = Marc och Ada. All UI på svenska, mobil först (Samsung Fold). Se `
 - `js/karta.js` – planritningen (egen SVG), rum, robotfria zoner, `STANDARDOBJEKT`.
   `verktyg/logga.js` läser `STANDARDOBJEKT` härifrån – nytt standardobjekt = en rad här.
 - `js/valv.js` – inloggningen + WebCrypto-dekryptering av `data/valv/`; laddar karta/ml/hushall/app efter upplåsning.
-- `verktyg/valv.js` – samma valvformat i Node (kryptera/dekryptera, `las`, `foto`, `migrera`, `byt-losen`).
+- `verktyg/valv.js` – samma valvformat i Node (kryptera/dekryptera, `las`, `foto`, `skriv`, `lasfil`, `migrera`, `byt-losen`).
+- `js/robot.js` – 🤖 Robot-fliken: status, förbrukningsdelar, 2D-karta med SVG-överlägg, 3D (three.js lat från jsdelivr).
+- `verktyg/roborock/robo.py` (+ `publicera.py`) – läser Roborock S7 MaxV (bara läskommandon). `robo.py publicera`
+  hämtar allt, bygger ren kartbild + `robot.json` utanför repot och krypterar in i `data/valv/robot/`.
 - `js/hushall.js` – händelselogg (delad krypterad logg + lokala), härledd status, tilldelning, statistik, rättvis fördelning.
 - `js/ml.js` – TF.js + MobileNet v2 + KNN (laddas lat från cdn.jsdelivr.net). Inga API-nycklar.
 - `js/lagring.js` – localStorage + IndexedDB, allt i try/catch.
@@ -24,6 +27,7 @@ Hushållet = Marc och Ada. All UI på svenska, mobil först (Samsung Fold). Se `
   Lägg aldrig tillbaka okrypterad `data/events.json` eller `data/foton/`. Läs loggen med `node verktyg/valv.js las`.
 - **Repot är publikt.** Inga skärmbilder av bostaden, inga originalfoton. Foton går ENDAST via
   `verktyg/logga.js` (max 1280 px, q75, all metadata bort, kontrolleras efteråt). Lägg aldrig in en bild för hand.
+- **Robotkartan visar planlösningen** – får bara ligga krypterad (`data/valv/robot/*.enc`). Kolla `git ls-files | grep -i robot`.
 - Status härleds ur senaste händelsen; en utgången timer ger objektets `efterTimer` (ren/påminn).
 - "Fel – det var …" skapar en händelse med `ersatter` = den felaktiga händelsens id (den räknas då inte).
 - Statistik räknar insatser: status `pagar` (startat) och `ren`. `uppgift` blir egen rad.

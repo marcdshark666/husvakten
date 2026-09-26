@@ -1,3 +1,11 @@
 node_modules/
 *.log
 .env*
+__pycache__/
+*.pyc
+# Robotdata (planlösning!) får bara ligga krypterad i data/valv/robot/
+karta*.png
+karta*.json
+karta*.bin
+karta*.raw
+robot.json

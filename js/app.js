@@ -298,6 +298,7 @@
     if (bladId) ritaBladHuvud();
     if (flik === 'statistik') ritaStatistik();
     if (flik === 'galleri') ritaGalleri();
+    if (flik === 'robot' && HV.robot) HV.robot.visa($('#robot-vy'));
   }
 
   function ritaOversikt(vy) {

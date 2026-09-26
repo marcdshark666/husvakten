@@ -14,6 +14,9 @@ Håller koll på om hemmet är rent. Mobil först (Samsung Fold), all text på s
   Uppgifter kan tilldelas, och **⚖️ Rättvis fördelning** föreslår att den som gjort minst i veckan tar nästa.
 - **Statistik** – vecka/månad/allt per person, vem gjorde mest, per objekt och per uppgiftstyp.
 - **Galleri** – alla bilder som följt med en händelse, senast först.
+- **🤖 Robot** – Roborock S7 MaxV: batteri, läge, senaste städning, förbrukningsdelar (varning under 15 %),
+  totalsummor, robotens egen karta med rum, robotfria zoner, hinder (👕 👟 🔌 …), laddstation, robotposition
+  och städväg (av/på), samt en 3D-vy (three.js, laddas först när du trycker 3D; faller tillbaka om WebGL saknas).
 - **Bildbedömning som lär sig** – TensorFlow.js + MobileNet (feature extractor) + KNN per objekt, helt i
   webbläsaren (cdn.jsdelivr.net). Märk exempel (ren/smutsig; för maskiner tom/fylld/startad/ren disk – plocka ur),
   rätta med "Fel – det var …". Säkerhet visas i procent; för få exempel → sätt status manuellt.
@@ -41,6 +44,7 @@ ligger **krypterad** i `data/valv/` – utan rätt uppgifter går den inte att l
 |-----|-----|
 | `data/valv/events.json.enc` (repo, krypterad) | Delad händelselogg, tilldelningar, delade träningsbilder. Dekrypteras vid varje laddning. |
 | `data/valv/foton/<namn>.jpg.enc` (repo, krypterad) | Nedskalade JPEG (max 1280 px, q75) **utan EXIF/GPS**. I loggen heter de `data/foton/<namn>.jpg`. |
+| `data/valv/robot/*.enc` (repo, krypterad) | Robotfliken: ren kartbild (beskuren, ≤ 1000 px) + `robot.json` (status, rum, zoner, hinder, städväg, väggar för 3D). |
 | `data/valv/meta.json` (repo, publik) | Salt, iterationer, format – inga hemligheter. |
 | localStorage | Objekt, lokala händelser, tilldelningar, vald person. |
 | IndexedDB | Träningsexempel (embeddings + miniatyrer) och lokala foton. |
@@ -59,6 +63,18 @@ git add data && git commit -m "Husvakten: ny händelse" && git push
 ```
 Loggen och bilden skrivs krypterat i `data/valv/` (kräver `~/.husvakten/losen.txt`). `--dry-run` skriver inget.
 Tid = `--tid` → bildens EXIF-tid (Europe/Stockholm) → nu. Skriptet vägrar om metadata finns kvar i bilden.
+
+## Robotfliken – publicera ny robotdata
+```bash
+python verktyg/roborock/robo.py publicera            # läser roboten (rör den aldrig) + krypterar in
+python verktyg/roborock/robo.py publicera --ingen-hamtning   # bygg om från redan hämtad data
+node verktyg/valv.js lasfil robot/robot.json         # kontroll: storlek + sha256
+git add data/valv/robot && git commit -m "Husvakten: robotdata" && git push
+```
+Rådata ligger i `~/.roborock/data/`, byggda filer i `~/.roborock/data/publicera/` – båda utanför repot.
+I repot finns bara `data/valv/robot/karta.png.enc` och `robot.json.enc` (AAD = `robot/karta.png` resp. `robot/robot.json`).
+`node verktyg/valv.js skriv <robot/namn.png|json> <fil>` krypterar valfri sådan fil (vägrar källfiler i repot);
+`byt-losen` krypterar om robotfilerna också.
 
 ## Köra lokalt
 Statisk sajt, inget byggsteg: `npx serve .` och öppna http://localhost:3000 (WebCrypto kräver localhost/https).

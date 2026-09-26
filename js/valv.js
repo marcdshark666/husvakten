@@ -10,7 +10,8 @@
   const HV = (window.HV = window.HV || {});
   const BAS = 'data/valv/';
   const FOTO_RE = /^data\/foton\/([\w.-]+\.jpe?g)$/i;
-  const APPSKRIPT = ['js/karta.js', 'js/ml.js', 'js/hushall.js', 'js/app.js'];
+  const GENERISK_RE = /^robot\/[\w-]+\.(png|json)$/; // samma som verktyg/valv.js
+  const APPSKRIPT = ['js/karta.js', 'js/ml.js', 'js/hushall.js', 'js/robot.js', 'js/app.js'];
 
   let nyckel = null;
   const bildCache = new Map(); // logisk sökväg → Promise<objectURL>
@@ -72,6 +73,13 @@
     return new Blob([klar], { type: 'image/jpeg' });
   }
 
+  /** Dekrypterad generisk valvfil (t.ex. "robot/robot.json") som ArrayBuffer. */
+  async function lasFil(namn) {
+    if (!GENERISK_RE.test(String(namn || ''))) throw new Error('Ogiltigt valvnamn');
+    if (!nyckel) throw new Error('Valvet är låst');
+    return dekryptera(nyckel, await hamta(BAS + namn + '.enc'), namn);
+  }
+
   /** Object-URL till dekrypterad bild (cachas under sessionen). null vid fel. */
   function bildUrl(bild) {
     if (!bildCache.has(bild)) {
@@ -111,7 +119,7 @@
     nyckel = k;
   }
 
-  HV.valv = { lasEvents, hamtaBlob, bildUrl, get upplast() { return !!nyckel; } };
+  HV.valv = { lasEvents, hamtaBlob, bildUrl, lasFil, get upplast() { return !!nyckel; } };
 
   // ---------- Inloggningsrutan ----------
   function startaInloggning() {

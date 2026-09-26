@@ -6,6 +6,8 @@ Användning:
     python verktyg/roborock/robo.py historik   # städsammanfattning + senaste städposter
     python verktyg/roborock/robo.py foton      # kamerastatus + hinderbilder från kartan
     python verktyg/roborock/robo.py alla       # allt ovan i en anslutning
+    python verktyg/roborock/robo.py publicera  # alla + bygg robotfliken och kryptera in i data/valv/robot/
+                                               # (--ingen-hamtning = bygg om från redan hämtad data)
 
 All data sparas ENDAST i %USERPROFILE%/.roborock/data/ – aldrig i repot (repot är publikt).
 Inloggningen återanvänds från ~/.roborock/husvakten-userdata.json. Ingen ny inloggningskod begärs.
@@ -245,6 +247,10 @@ async def hamta_karta(dev) -> dict:
     md = mc.map_data
     if md is None or md.image is None:
         return ut
+    if fangad:  # rå rutnät (1 byte/cell, rad 0 = y-minimum) – för väggar/rum i publicera
+        (DATA / "karta_grid.bin").write_bytes(fangad["raw"][: fangad["w"] * fangad["h"]])
+        ut["grid"] = {"fil": "karta_grid.bin", "bredd": fangad["w"], "höjd": fangad["h"],
+                      "kodning": "0=utanför, 1=vägg, 255=golv, 7=skannat, annars &7: 0=grå vägg, 1=vägg v2, 7=rum (id = v>>3)"}
 
     namn = {r.segment_id: r.name for r in (p.rooms.rooms or [])}
     ut["koordinater"] = _pixlar(md)
@@ -372,10 +378,24 @@ if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description="Husvakten – läs Roborock (read-only)")
-    ap.add_argument("val", choices=["status", "karta", "historik", "foton", "alla"])
+    ap.add_argument("val", choices=["status", "karta", "historik", "foton", "alla", "publicera"])
     ap.add_argument("-v", action="store_true", help="debuglogg")
+    ap.add_argument("--ingen-hamtning", action="store_true", help="publicera: använd redan hämtad data")
     a = ap.parse_args()
     logging.basicConfig(level=logging.DEBUG if a.v else logging.WARNING)
     if sys.platform == "win32":  # aiomqtt kräver selector-loop (Proactor saknar add_reader)
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    if a.val == "publicera":
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        import publicera  # noqa: E402 – bara när det behövs (numpy/cv2/PIL)
+
+        if not a.ingen_hamtning:
+            kod = asyncio.run(main("alla"))  # bara läskommandon
+            if kod:
+                sys.exit(kod)
+        info = publicera.bygg()
+        print(json.dumps(info, ensure_ascii=False, indent=2))
+        publicera.kryptera_in(info)
+        print("klart – commita data/valv/robot/ (krypterat)")
+        sys.exit(0)
     sys.exit(asyncio.run(main(a.val)))

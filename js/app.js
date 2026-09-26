@@ -219,10 +219,70 @@
 
   function vyObjekt() {
     const alla = hushall.allaHandelser();
+    const nu = Date.now();
     return S.objekt.map((o) => {
       const a = aktuell(o, alla);
-      return { ...o, status: a.status, timerSlut: a.timerSlut, nastaVattning: a.nastaVattning, senast: a.handelse, tilldelad: hushall.tilldelad(o.id) };
+      return { ...o, status: a.status, timerSlut: a.timerSlut, nastaVattning: a.nastaVattning, senast: a.handelse, tilldelad: hushall.tilldelad(o.id), vattning: vattningFor(o, alla, nu) };
     });
+  }
+
+  /** Nedräkning till nästa vattning: "Vattna om 3 d 4 h" / "Vattna idag!" / "Försenad 2 d". */
+  function nedrakningText(nasta, nu) {
+    const kvar = nasta - nu;
+    if (kvar <= 0) {
+      const dagar = Math.floor(-kvar / 864e5);
+      return dagar >= 1 ? { text: 'Försenad ' + dagar + ' d', klass: 'sen' } : { text: 'Vattna idag!', klass: 'idag' };
+    }
+    const slutIdag = new Date(nu); slutIdag.setHours(23, 59, 59, 999);
+    const d = Math.floor(kvar / 864e5);
+    const tim = Math.floor((kvar % 864e5) / 36e5);
+    const min = Math.max(1, Math.floor((kvar % 36e5) / 6e4));
+    if (nasta <= slutIdag.getTime()) return { text: 'Vattna idag! (om ' + (tim ? tim + ' h' : min + ' min') + ')', klass: 'idag' };
+    return { text: 'Vattna om ' + (d ? d + ' d ' + tim + ' h' : tim ? tim + ' h' : min + ' min'), klass: 'ok' };
+  }
+
+  /** Vattningsläge för en växt (null för allt som inte vattnas). Utgår från senaste "ren" = vattnad. */
+  function vattningFor(o, alla, nu) {
+    const dagar = karta.VATTNA[o.id];
+    if (!dagar) return null;
+    const art = (karta.VAXTART[o.id] || {}).art || o.namn;
+    let senast = null;
+    for (let i = alla.length - 1; i >= 0; i--) {
+      const hh = alla[i];
+      if (hh.objektId === o.id && hh.status === 'ren') {
+        const t = Date.parse(hh.tid);
+        if (Number.isFinite(t)) { senast = t; break; }
+      }
+    }
+    if (senast === null) return { art, dagar, senast: null, nasta: null, text: 'Aldrig vattnad – vattna!', klass: 'sen' };
+    const nasta = senast + dagar * 864e5;
+    return { art, dagar, senast, nasta, ...nedrakningText(nasta, nu) };
+  }
+
+  /** Kortet "🪴 Växterna" på startsidan. */
+  function ritaVaxter(vy) {
+    const vaxter = vy.filter((o) => o.vattning);
+    const kort = $('#vaxter-kort');
+    kort.hidden = !vaxter.length;
+    const dagFmt = (ms) => new Date(ms).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' });
+    $('#vaxter').replaceChildren(
+      ...vaxter
+        .sort((a, b) => (a.vattning.nasta ?? -Infinity) - (b.vattning.nasta ?? -Infinity))
+        .map((o) =>
+          h('li', null,
+            h('button', { class: 'vaxt-rad st-' + o.status, onclick: () => oppnaBlad(o.id) },
+              h('span', { class: 'rad-emoji' }, o.emoji),
+              h('span', { class: 'vaxt-info' },
+                h('strong', null, o.namn),
+                h('span', { class: 'vaxt-art-text' }, o.vattning.art),
+                h('span', { class: 'fin blockrad' },
+                  'Var ' + o.vattning.dagar + ':e dag · ' + (o.vattning.senast ? 'senast ' + dagFmt(o.vattning.senast) : 'aldrig vattnad'))
+              ),
+              h('span', { class: 'vaxt-nedrakning-text ' + o.vattning.klass }, o.vattning.text)
+            )
+          )
+        )
+    );
   }
 
   function ritaAllt() {
@@ -233,6 +293,7 @@
       oppnaBlad(id);
     });
     ritaLista(vy);
+    ritaVaxter(vy);
     if (bladId) ritaBladHuvud();
     if (flik === 'statistik') ritaStatistik();
     if (flik === 'galleri') ritaGalleri();
@@ -281,7 +342,7 @@
             h('span', { class: 'prio prio-' + prio(o), title: 'Prioritet inför gäster' }, 'P' + prio(o)),
             h('span', { class: 'rad-namn' }, o.namn,
               o.tilldelad ? h('span', { class: 'tilldelad' }, ' → ' + o.tilldelad) : null,
-              o.nastaVattning ? h('span', { class: 'vattna' }, ' · ' + vattnaText(o.nastaVattning)) : null
+              o.vattning ? h('span', { class: 'vattna ' + o.vattning.klass }, ' · 💧 ' + o.vattning.text) : null
             ),
             o.status === 'pagar' && o.timerSlut
               ? h('span', { class: 'nedrakning', 'data-slut': String(o.timerSlut) }, formatTid(o.timerSlut - Date.now()))
@@ -1076,6 +1137,17 @@
   ritaPersonvaljare();
   ritaAllt();
   setInterval(tick, 1000);
+  // Växternas nedräkning uppdateras varje minut (bara karta, växtkort och lista – inte galleriet).
+  setInterval(() => {
+    if (document.hidden || placeraId || flik !== 'hem') return;
+    const vy = vyObjekt();
+    karta.rita(svg, vy, valtId, (id) => {
+      if (placeraId) return;
+      oppnaBlad(id);
+    });
+    ritaVaxter(vy);
+    ritaLista(vy);
+  }, 60000);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       hushall.laddaRepo().then(ritaAllt);

@@ -97,6 +97,13 @@
   // Palettblad (Coleus) är törstigt: jämnt fuktig jord, ca var 3:e dag vid elementet.
   const VATTNA = { vaxter: 7, monstera: 10, palettblad: 3 };
 
+  // Art per växt (visas på kartan och i växtkortet). `sida` = var etiketten står på kartan.
+  const VAXTART = {
+    vaxter: { art: 'Phalaenopsis (fjärilsorkidé)', kort: 'Fjärilsorkidé', sida: 'under' },
+    monstera: { art: 'Monstera deliciosa', kort: 'Monstera deliciosa', sida: 'over' },
+    palettblad: { art: 'Palettblad (Coleus scutellarioides)', kort: 'Palettblad (Coleus)', sida: 'hoger' },
+  };
+
   function el(namn, attr, forälder) {
     const e = document.createElementNS(NS, namn);
     for (const k in attr) e.setAttribute(k, attr[k]);
@@ -188,7 +195,9 @@
 
     const lager = svg.querySelector('#lager-objekt');
     while (lager.firstChild) lager.removeChild(lager.firstChild);
+    const vaxtSkyltar = [];
     for (const o of objekt) {
+      if (o.vattning) vaxtSkyltar.push(o);
       const g = el('g', {
         class: 'objekt st-' + o.status + (o.id === valtId ? ' valt' : ''),
         transform: 'translate(' + o.x + ' ' + o.y + ')',
@@ -213,6 +222,42 @@
         if (e.key === 'Enter' || e.key === ' ') valj(e);
       });
     }
+    // Växtskyltarna ritas sist så att inga markörer hamnar ovanpå dem.
+    for (const o of vaxtSkyltar) {
+      const g = el('g', { transform: 'translate(' + o.x + ' ' + o.y + ')', class: 'vaxt-skylt' }, lager);
+      ritaVaxtEtikett(g, o.vattning, (VAXTART[o.id] || {}).sida, o.x);
+    }
+  }
+
+  /** Liten skylt vid en växt: art + nedräkning till nästa vattning, på mörk platta. */
+  function ritaVaxtEtikett(g, v, sida, ox) {
+    const hoger = sida === 'hoger';
+    const x = hoger ? 26 : 0;
+    const y1 = hoger ? -2 : sida === 'over' ? -44 : 54;
+    const anchor = hoger ? 'start' : 'middle';
+    const skylt = el('g', { class: 'vaxt-etikett', 'aria-hidden': 'true' }, g);
+    const platta = el('rect', { rx: 6, class: 'vaxt-platta' }, skylt);
+    const t1 = text(v.art, { x, y: y1, 'text-anchor': anchor, class: 'vaxt-art' }, skylt);
+    const t2 = text(v.text, { x, y: y1 + 16, 'text-anchor': anchor, class: 'vaxt-nedrakning ' + v.klass }, skylt);
+    let bredd = 0;
+    for (const t of [t1, t2]) {
+      let b = 0;
+      try {
+        b = t.getComputedTextLength();
+      } catch (e) {
+        b = 0; // ej renderad (t.ex. dold flik) – uppskattning nedan
+      }
+      bredd = Math.max(bredd, b || t.textContent.length * 7);
+    }
+    const pad = 5;
+    const vanster = hoger ? x - pad : -bredd / 2 - pad;
+    // Håll skylten inom kartan (viewBox 280–1010 i x).
+    const skjut = Math.max(0, 284 - (ox + vanster)) - Math.max(0, ox + vanster + bredd + pad * 2 - 1006);
+    if (skjut) skylt.setAttribute('transform', 'translate(' + skjut + ' 0)');
+    platta.setAttribute('x', String(vanster));
+    platta.setAttribute('y', String(y1 - 13));
+    platta.setAttribute('width', String(bredd + pad * 2));
+    platta.setAttribute('height', '36');
   }
 
   /** Klientkoordinat → SVG-koordinat. */
@@ -242,5 +287,5 @@
     return null;
   }
 
-  HV.karta = { RUM, ZONER, STANDARDOBJEKT, PRIO, VATTNA, byggGrund, rita, tillSvg, rumVid };
+  HV.karta = { RUM, ZONER, STANDARDOBJEKT, PRIO, VATTNA, VAXTART, byggGrund, rita, tillSvg, rumVid };
 })();

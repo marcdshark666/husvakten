@@ -227,3 +227,28 @@ dialog.blad::backdrop { background: rgba(4, 7, 12, .65); }
 .objekt.st-pagar .objekt-yta { fill: var(--gul); }
 .objekt.st-smutsig .objekt-yta { fill: var(--rod); fill-opacity: .16; }
 .vattna { color: #5ab8ff; font-size: .8rem; }
+
+/* ---------- Växterna: art + nedräkning till vattning ---------- */
+.vaxt-platta { fill: rgba(10, 14, 22, .82); stroke: #2f6f9e; stroke-width: 1.5; }
+.vaxt-art { fill: #cfe3ff; font-size: 13px; font-style: italic; font-weight: 600; pointer-events: none; }
+.vaxt-nedrakning { font-size: 13px; font-weight: 800; pointer-events: none; }
+.vaxt-nedrakning.ok { fill: #5ab8ff; }
+.vaxt-nedrakning.idag { fill: var(--gul); }
+.vaxt-nedrakning.sen { fill: var(--rod); }
+.vaxt-rad { width: 100%; display: flex; align-items: center; gap: 10px; background: var(--yta2); color: var(--text); border: 1px solid var(--kant); border-left: 5px solid var(--kant); border-radius: 10px; padding: 10px; font: inherit; text-align: left; cursor: pointer; }
+.vaxt-rad.st-smutsig { border-left-color: var(--rod); }
+.vaxt-rad.st-ren { border-left-color: var(--gron); }
+.vaxt-info { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.vaxt-info .fin { margin: 0; font-size: .8rem; }
+.vaxt-art-text { color: #cfe3ff; font-style: italic; font-size: .85rem; }
+.vaxt-nedrakning-text { font-weight: 800; font-size: .9rem; text-align: right; flex: none; max-width: 42%; }
+.vaxt-nedrakning-text.ok { color: #5ab8ff; }
+.vaxt-nedrakning-text.idag { color: var(--gul); }
+.vaxt-nedrakning-text.sen { color: var(--rod); }
+@media (min-width: 700px) {
+  .vaxter-kort { grid-column: 1; grid-row: 2; }
+  .lista-kort { grid-column: 2; grid-row: 1 / span 2; }
+}
+.vaxt-skylt { pointer-events: none; }
+.vattna.sen { color: var(--rod); font-weight: 700; }
+.vattna.idag { color: var(--gul); font-weight: 700; }

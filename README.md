@@ -22,13 +22,18 @@ Håller koll på om hemmet är rent. Mobil först (Samsung Fold), all text på s
 ## Inloggning och valvet 🔒
 Hela sajten kräver inloggning (e-post + lösenord) vid varje besök. Repot är publikt, så den delade datan
 ligger **krypterad** i `data/valv/` – utan rätt uppgifter går den inte att läsa, varken på sajten eller i repot.
-- Nyckel: PBKDF2-SHA256 (600 000 iterationer, salt i `data/valv/meta.json`) av `epost (gemener) + "
+- Nyckel: PBKDF2-SHA256 (iterationer + salt i `data/valv/meta.json`, nu 2 000 000; min 600 000) av `epost (gemener) + "
 " + lösenord`.
 - Filer: AES-256-GCM, `[0x01][IV 12 byte][chiffertext + tagg]`, AAD = logiskt filnamn.
 - Webbläsaren (`js/valv.js`, WebCrypto) dekrypterar i minnet; lösenordet sparas aldrig (inte i localStorage/sessionStorage).
   Appens skript laddas först efter upplåsning.
 - Node (`verktyg/valv.js`) läser lösenord/e-post ur `~/.husvakten/losen.txt` och `epost.txt` – **utanför repot**.
   `node verktyg/valv.js las` skriver ut loggen; `node verktyg/valv.js foto <namn> <utfil>` dekrypterar en bild (utanför repot).
+- Byt lösenord / höj iterationer: lägg ev. nytt lösenord i `~/.husvakten/losen-nytt.txt`, kör
+  `node verktyg/valv.js byt-losen --iter 2000000`. Allt krypteras om med nytt salt, verifieras innan filerna byts,
+  gamla filer kopieras till `~/.husvakten/valv-backup-<tid>/` och `losen-nytt.txt` blir `losen.txt` först när allt är klart.
+  Sajten läser iterationerna ur `meta.json`. Commita sedan `data/valv/`.
+- Sajten har `noindex, nofollow` + `robots.txt` som stänger ute sökmotorer.
 - Gamla okrypterade `data/events.json` och `data/foton/` togs bort 2026-09-26 men finns kvar i git-historiken.
 
 ## Data

@@ -15,6 +15,11 @@
  *   node verktyg/valv.js las        skriv ut dekrypterad events.json på stdout
  *   node verktyg/valv.js migrera    kryptera data/events.json + data/foton/*.jpg in i valvet (en gång)
  *   node verktyg/valv.js foto <namn> <utfil>   dekryptera en bild till en lokal fil (utanför repot!)
+ *   node verktyg/valv.js byt-losen [--iter N] [--gammalt-fil <sökväg>]
+ *        kryptera om HELA valvet med nytt salt (+ nya iterationer, standard 2 000 000).
+ *        Gammalt lösenord: ~/.husvakten/losen.txt (eller --gammalt-fil). Nytt: ~/.husvakten/losen-nytt.txt
+ *        om den finns (flyttas till losen.txt när allt verifierats), annars samma lösenord.
+ *        Gamla krypterade filer säkerhetskopieras till ~/.husvakten/valv-backup-<tid>/ först.
  */
 'use strict';
 const fs = require('fs');
@@ -28,19 +33,24 @@ const META = path.join(VALV, 'meta.json');
 const EVENTS_ENC = path.join(VALV, 'events.json.enc');
 const FOTON_ENC = path.join(VALV, 'foton');
 const HEMLIG_KATALOG = process.env.HUSVAKTEN_HEMLIG || path.join(os.homedir(), '.husvakten');
-const ITERATIONER = 600000;
+const ITERATIONER = 600000;        // minsta tillåtna (OWASP 2023 för PBKDF2-SHA256)
+const ITERATIONER_MAX = 10000000;  // övre gräns så en trasig meta.json inte låser webbläsaren
+const ITERATIONER_STANDARD = 2000000;
 const FORMAT_VERSION = 1;
 const NAMN_RE = /^[\w.-]+\.jpe?g$/i;
 
-function lasHemligheter() {
-  const losenFil = path.join(HEMLIG_KATALOG, 'losen.txt');
-  const epostFil = path.join(HEMLIG_KATALOG, 'epost.txt');
-  if (!fs.existsSync(losenFil) || !fs.existsSync(epostFil)) {
-    throw new Error('saknar ' + losenFil + ' eller ' + epostFil);
-  }
+function lasLosenFil(losenFil) {
+  if (!fs.existsSync(losenFil)) throw new Error('saknar ' + losenFil);
   const losen = fs.readFileSync(losenFil, 'utf8').replace(/^﻿/, '').replace(/[\r\n]+$/, '');
+  if (!losen) throw new Error(path.basename(losenFil) + ' är tom');
+  return losen;
+}
+
+function lasHemligheter(losenFil = path.join(HEMLIG_KATALOG, 'losen.txt')) {
+  const epostFil = path.join(HEMLIG_KATALOG, 'epost.txt');
+  if (!fs.existsSync(epostFil)) throw new Error('saknar ' + epostFil);
+  const losen = lasLosenFil(losenFil);
   const epost = fs.readFileSync(epostFil, 'utf8').replace(/^﻿/, '').trim();
-  if (!losen) throw new Error('losen.txt är tom');
   if (!epost.includes('@')) throw new Error('epost.txt ser inte ut som en e-postadress');
   return { epost, losen };
 }
@@ -48,7 +58,8 @@ function lasHemligheter() {
 function lasMeta() {
   if (!fs.existsSync(META)) return null;
   const m = JSON.parse(fs.readFileSync(META, 'utf8'));
-  if (m.version !== FORMAT_VERSION || !m.kdf || !m.kdf.salt || !(m.kdf.iterationer >= ITERATIONER)) {
+  if (m.version !== FORMAT_VERSION || !m.kdf || !m.kdf.salt || !Number.isInteger(m.kdf.iterationer) ||
+      m.kdf.iterationer < ITERATIONER || m.kdf.iterationer > ITERATIONER_MAX) {
     throw new Error('data/valv/meta.json har okänt format');
   }
   return m;
@@ -58,7 +69,7 @@ function skapaMeta() {
   const m = {
     version: FORMAT_VERSION,
     beskrivning: 'Husvaktens valv. Data är krypterad med AES-256-GCM; nyckeln härleds ur e-post + lösenord. Inga hemligheter i denna fil.',
-    kdf: { namn: 'PBKDF2-SHA256', iterationer: ITERATIONER, salt: crypto.randomBytes(16).toString('base64'), indata: 'epost.trim().toLowerCase() + "\\n" + losenord' },
+    kdf: { namn: 'PBKDF2-SHA256', iterationer: ITERATIONER_STANDARD, salt: crypto.randomBytes(16).toString('base64'), indata: 'epost.trim().toLowerCase() + "\\n" + losenord' },
     chiffer: { namn: 'AES-256-GCM', iv: 12, tagg: 16, layout: '[0x01][iv][chiffertext+tagg]', aad: 'logiskt filnamn' },
     filer: { events: 'events.json.enc', foton: 'foton/<namn>.enc' },
   };
@@ -163,7 +174,108 @@ function migrera() {
   return { handelser: (data.handelser || []).length, traning: (data.traning || []).length, foton: foton.length, saknadeFoton: saknas };
 }
 
-module.exports = { ROT, VALV, oppna, lasEvents, skrivEvents, skrivFoto, lasFoto, kryptera, dekryptera, harledNyckel, NAMN_RE };
+/** Alla krypterade filer i valvet: [{ fil, namn }] där namn = logiskt namn (AAD). */
+function valvFiler() {
+  const filer = [];
+  for (const f of fs.readdirSync(VALV)) {
+    const full = path.join(VALV, f);
+    if (fs.statSync(full).isDirectory()) {
+      if (f !== 'foton') throw new Error('okänd katalog i valvet: ' + f + ' – vägrar fortsätta');
+      continue;
+    }
+    if (f === 'meta.json') continue;
+    if (f === 'events.json.enc') filer.push({ fil: full, namn: 'events.json' });
+    else throw new Error('okänd fil i valvet: ' + f + ' – vägrar fortsätta');
+  }
+  if (fs.existsSync(FOTON_ENC)) {
+    for (const f of fs.readdirSync(FOTON_ENC)) {
+      const namn = f.replace(/\.enc$/, '');
+      if (!f.endsWith('.enc') || !NAMN_RE.test(namn)) throw new Error('okänd fil i valvet: foton/' + f + ' – vägrar fortsätta');
+      filer.push({ fil: path.join(FOTON_ENC, f), namn: 'foton/' + namn });
+    }
+  }
+  return filer;
+}
+
+/** Kryptera om hela valvet med nytt salt/iterationer (och ev. nytt lösenord). */
+function bytLosen({ iter = ITERATIONER_STANDARD, gammaltFil } = {}) {
+  if (!Number.isInteger(iter) || iter < ITERATIONER || iter > ITERATIONER_MAX) {
+    throw new Error('--iter måste vara ett heltal mellan ' + ITERATIONER + ' och ' + ITERATIONER_MAX);
+  }
+  const losenFil = path.join(HEMLIG_KATALOG, 'losen.txt');
+  const nyttFil = path.join(HEMLIG_KATALOG, 'losen-nytt.txt');
+  const gammal = lasHemligheter(gammaltFil ? path.resolve(gammaltFil) : losenFil);
+  const nyttLosen = fs.existsSync(nyttFil) ? lasLosenFil(nyttFil) : null;
+  const gammalMeta = lasMeta();
+  if (!gammalMeta) throw new Error('data/valv/meta.json saknas');
+  const gammalNyckel = harledNyckel(gammal.epost, gammal.losen, gammalMeta);
+
+  // 1. Dekryptera allt med gamla nyckeln (i minnet)
+  const filer = valvFiler();
+  if (!filer.some((f) => f.namn === 'events.json')) throw new Error('events.json.enc saknas');
+  const klart = filer.map((f) => {
+    const gammalBuf = fs.readFileSync(f.fil);
+    try {
+      return { ...f, gammalBuf, klar: dekryptera(gammalNyckel, gammalBuf, f.namn) };
+    } catch (e) {
+      throw new Error('kunde inte dekryptera ' + f.namn + ' med gamla lösenordet: ' + e.message);
+    }
+  });
+
+  // 2. Ny meta + ny nyckel, kryptera om och verifiera i minnet
+  const nyMeta = JSON.parse(JSON.stringify(gammalMeta));
+  nyMeta.kdf.iterationer = iter;
+  nyMeta.kdf.salt = crypto.randomBytes(16).toString('base64');
+  const nyNyckel = harledNyckel(gammal.epost, nyttLosen === null ? gammal.losen : nyttLosen, nyMeta);
+  for (const f of klart) {
+    f.nyBuf = kryptera(nyNyckel, f.klar, f.namn);
+    if (!dekryptera(nyNyckel, f.nyBuf, f.namn).equals(f.klar)) throw new Error('återläsning misslyckades: ' + f.namn);
+  }
+  const metaText = JSON.stringify(nyMeta, null, 2) + '\n';
+
+  // 3. Säkerhetskopia av gamla krypterade filer UTANFÖR repot
+  const stampel = new Date().toISOString().replace(/[:.]/g, '-');
+  const backup = path.join(HEMLIG_KATALOG, 'valv-backup-' + stampel);
+  fs.mkdirSync(path.join(backup, 'foton'), { recursive: true });
+  fs.copyFileSync(META, path.join(backup, 'meta.json'));
+  for (const f of klart) fs.writeFileSync(path.join(backup, f.namn === 'events.json' ? 'events.json.enc' : f.namn + '.enc'), f.gammalBuf);
+
+  // 4. Skriv allt till .tmp, byt sedan (meta sist)
+  for (const f of klart) fs.writeFileSync(f.fil + '.tmp', f.nyBuf);
+  fs.writeFileSync(META + '.tmp', metaText);
+  for (const f of klart) fs.renameSync(f.fil + '.tmp', f.fil);
+  fs.renameSync(META + '.tmp', META);
+
+  // 5. Verifiera från disk med nyckel härledd ur den skrivna meta.json
+  const diskMeta = lasMeta();
+  const diskNyckel = harledNyckel(gammal.epost, nyttLosen === null ? gammal.losen : nyttLosen, diskMeta);
+  for (const f of klart) {
+    if (!dekryptera(diskNyckel, fs.readFileSync(f.fil), f.namn).equals(f.klar)) {
+      throw new Error('verifiering från disk misslyckades: ' + f.namn + ' – återställ från ' + backup);
+    }
+  }
+
+  // 6. Nytt lösenord verifierat → losen-nytt.txt ersätter losen.txt
+  if (nyttLosen !== null) fs.renameSync(nyttFil, losenFil);
+  const events = JSON.parse(klart.find((f) => f.namn === 'events.json').klar.toString('utf8'));
+  return {
+    filer: klart.length,
+    foton: klart.filter((f) => f.namn.startsWith('foton/')).length,
+    handelser: (events.handelser || []).length,
+    iterationer: iter,
+    nyttLosen: nyttLosen !== null,
+    backup,
+  };
+}
+
+function flagga(args, namn) {
+  const i = args.indexOf(namn);
+  if (i === -1) return undefined;
+  if (i + 1 >= args.length) throw new Error(namn + ' saknar värde');
+  return args[i + 1];
+}
+
+module.exports = { ROT, VALV, oppna, bytLosen, lasEvents, skrivEvents, skrivFoto, lasFoto, kryptera, dekryptera, harledNyckel, NAMN_RE };
 
 if (require.main === module) {
   try {
@@ -179,8 +291,12 @@ if (require.main === module) {
       if (ut.startsWith(ROT + path.sep)) throw new Error('skriv inte dekrypterade bilder i repot');
       fs.writeFileSync(ut, lasFoto(nyckel, rest[0]));
       console.log('skrev ' + ut);
+    } else if (cmd === 'byt-losen') {
+      const iterText = flagga(rest, '--iter');
+      const iter = iterText === undefined ? ITERATIONER_STANDARD : Number(iterText);
+      console.log(JSON.stringify({ ok: true, ...bytLosen({ iter, gammaltFil: flagga(rest, '--gammalt-fil') }) }, null, 2));
     } else {
-      console.error('användning: node verktyg/valv.js las | migrera | foto <namn> <utfil>');
+      console.error('användning: node verktyg/valv.js las | migrera | foto <namn> <utfil> | byt-losen [--iter N] [--gammalt-fil <sökväg>]');
       process.exit(2);
     }
   } catch (e) {

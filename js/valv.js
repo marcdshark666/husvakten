@@ -30,7 +30,9 @@
 
   async function harledNyckel(epost, losen) {
     const meta = await hamta(BAS + 'meta.json', 'json');
-    if (!meta || meta.version !== 1 || !meta.kdf || !meta.kdf.salt || !(meta.kdf.iterationer >= 600000)) {
+    // Iterationerna läses ur meta.json (byts med `node verktyg/valv.js byt-losen --iter N`), aldrig hårdkodat.
+    const iter = meta && meta.kdf && meta.kdf.iterationer;
+    if (!meta || meta.version !== 1 || !meta.kdf || !meta.kdf.salt || !Number.isInteger(iter) || iter < 600000 || iter > 10000000) {
       throw new Error('Valvets meta.json har okänt format');
     }
     const indata = new TextEncoder().encode(String(epost).trim().toLowerCase() + '\n' + String(losen));

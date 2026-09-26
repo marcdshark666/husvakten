@@ -3,8 +3,8 @@
   "beskrivning": "Husvaktens valv. Data är krypterad med AES-256-GCM; nyckeln härleds ur e-post + lösenord. Inga hemligheter i denna fil.",
   "kdf": {
     "namn": "PBKDF2-SHA256",
-    "iterationer": 600000,
-    "salt": "CDqFhc327Jvd14Ev4AG9Hg==",
+    "iterationer": 2000000,
+    "salt": "TsLpv5JqoCRAQH08f5UqBQ==",
     "indata": "epost.trim().toLowerCase() + \"\\n\" + losenord"
   },
   "chiffer": {

@@ -279,6 +279,16 @@
       "notis": "Vid spisen: ugnsplåt, kaffekanna och två koppar – in i diskmaskinen när den är tömd, torka spishällen",
       "uppgift": "Diska och torka köksbänken",
       "bild": "data/foton/20260926-114841-koksbank.jpg"
+    },
+    {
+      "id": "e-20260926-121927-zt1v",
+      "tid": "2026-09-26T12:19:27+02:00",
+      "objektId": "diskmaskin",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Urplockad och tom – Marc fyller på med disken från hon och bänken",
+      "uppgift": "Plocka ur disken",
+      "bild": "data/foton/20260926-121927-diskmaskin.jpg"
     }
   ],
   "tilldelningar": {
@@ -295,8 +305,8 @@
       "tid": "2026-09-26T07:28:16.047Z"
     },
     "diskmaskin": {
-      "person": "Marc",
-      "tid": "2026-09-26T09:48:40.221Z"
+      "person": null,
+      "tid": "2026-09-26T10:19:46.763Z"
     },
     "diskho": {
       "person": "Marc",
@@ -444,7 +454,14 @@
       "etikett": "smutsig",
       "bild": "data/foton/20260926-114841-koksbank.jpg",
       "tid": "2026-09-26T11:48:41+02:00"
+    },
+    {
+      "id": "t-20260926-121927-zt1v",
+      "objektId": "diskmaskin",
+      "etikett": "tom",
+      "bild": "data/foton/20260926-121927-diskmaskin.jpg",
+      "tid": "2026-09-26T12:19:27+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T09:49:37.036Z"
+  "uppdaterad": "2026-09-26T10:19:46.763Z"
 }

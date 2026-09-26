@@ -44,7 +44,7 @@ const FORMAT_VERSION = 1;
 const NAMN_RE = /^[\w.-]+\.jpe?g$/i;
 // Generiska valvfiler (robotfliken m.m.): <katalog>/<namn>.<ändelse>, bara kända kataloger.
 const GENERISKA_KATALOGER = ['robot'];
-const GENERISK_RE = /^(robot)\/[\w-]+\.(png|json)$/;
+const GENERISK_RE = /^robot\/(foton\/)?[\w-]+\.(png|json|jpg)$/;
 
 function lasLosenFil(losenFil) {
   if (!fs.existsSync(losenFil)) throw new Error('saknar ' + losenFil);
@@ -160,7 +160,7 @@ function lasFoto(nyckel, namn) {
 
 /** Sökväg till en generisk valvfil, t.ex. "robot/karta.png" → data/valv/robot/karta.png.enc */
 function generiskFil(namn) {
-  if (!GENERISK_RE.test(namn)) throw new Error('ogiltigt logiskt namn: ' + namn + ' (tillåtet: robot/<namn>.png|json)');
+  if (!GENERISK_RE.test(namn)) throw new Error('ogiltigt logiskt namn: ' + namn + ' (tillåtet: robot/<namn>.png|json, robot/foton/<id>.jpg)');
   return path.join(VALV, ...namn.split('/')) + '.enc';
 }
 
@@ -209,7 +209,13 @@ function valvFiler() {
     const full = path.join(VALV, f);
     if (fs.statSync(full).isDirectory()) {
       if (GENERISKA_KATALOGER.includes(f)) {
+        const poster = [];
         for (const g of fs.readdirSync(full)) {
+          const under = path.join(full, g);
+          if (g === 'foton' && fs.statSync(under).isDirectory()) poster.push(...fs.readdirSync(under).map((x) => 'foton/' + x));
+          else poster.push(g);
+        }
+        for (const g of poster) {
           const namn = f + '/' + g.replace(/\.enc$/, '');
           if (!g.endsWith('.enc') || !GENERISK_RE.test(namn)) throw new Error('okänd fil i valvet: ' + f + '/' + g + ' – vägrar fortsätta');
           filer.push({ fil: path.join(full, g), namn });

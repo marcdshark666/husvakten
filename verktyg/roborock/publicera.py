@@ -9,9 +9,12 @@ Anropas av `python verktyg/roborock/robo.py publicera` (hämtar först, bara lä
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
+import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from typing import Any
 
@@ -56,6 +59,16 @@ HINDERNAMN = {
     "weighing scale": "Våg", "weighting scale": "Våg", "dustpan": "Sopskyffel", "pedestal": "Möbelfot", "sock": "Strumpa",
     "fabric": "Tyg", "pet": "Husdjur", "bed": "Säng", "sofa": "Soffa",
 }
+
+
+SUGKRAFT = {101: "Tyst", 102: "Balanserad", 103: "Turbo", 104: "Max", 105: "Av (bara moppning)",
+            106: "Anpassad", 108: "Max+"}
+VATTENFLODE = {200: "Av", 201: "Låg", 202: "Medel", 203: "Hög", 204: "Anpassad", 207: "Anpassad"}
+MOPPLAGE = {300: "Standard", 301: "Djup", 302: "Anpassad", 303: "Djup+", 304: "Snabb"}
+STARTSATT = {1: "manuellt", 2: "appen", 3: "schema", 4: "appen (rum)", 5: "röststyrning"}
+HINDERFOTO_BIT = 10  # get_camera_status: bit 10 = hinderfoton på kartan (python-roborock)
+FOTO_MAXSIDA = 640
+DOLT = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # inga konsolfönster från schemat
 
 
 def _las(namn: str) -> Any:
@@ -248,7 +261,7 @@ def bygg() -> dict:
                           "enhet": "h" if enhet == "s" else "ggr"})
     summa = (historik or {}).get("sammanfattning", {})
     stadningar = []
-    for p in (historik or {}).get("poster", [])[:12]:
+    for p in (historik or {}).get("poster", []):
         r = p.get("rå")
         r = r[0] if isinstance(r, list) and r else r
         if not isinstance(r, dict):
@@ -257,7 +270,10 @@ def bygg() -> dict:
             "start": _iso(r.get("begin")), "slut": _iso(r.get("end")),
             "minuter": round((r.get("duration") or 0) / 60), "yta_m2": round((r.get("area") or 0) / 1e6, 1),
             "klar": bool(r.get("complete")), "undvek": r.get("avoid_count"),
+            "felkod": r.get("error") or 0, "startad_via": STARTSATT.get(r.get("start_type")),
+            "tomd": bool(r.get("dust_collection_status")),
         })
+    stadningar.sort(key=lambda x: x["start"] or "", reverse=True)
     lagkod = st.get("state")
     robot = {
         "version": 1,
@@ -281,6 +297,8 @@ def bygg() -> dict:
             "tomningar": summa.get("dustCollectionCount"),
         },
         "stadningar": stadningar,
+        "installningar": installningar(status, _las("foton.json")),
+        "hinderfoton": _hinderfoton(_las("foton.json"), karta),
         "karta": {
             "bredd": cw * s, "hojd": ch * s, "cell_px": s, "cell_mm": CELL_MM,
             "celler": [cw, ch],
@@ -303,14 +321,160 @@ def bygg() -> dict:
             "vaggrektanglar": len(robot["karta"]["vaggar"]), "json_kb": round(jsonfil.stat().st_size / 1024, 1)}
 
 
+def _klock(h: Any, m: Any) -> str:
+    return f"{int(h or 0):02d}:{int(m or 0):02d}"
+
+
+def _schema(rå: dict) -> list[str]:
+    """Schemalagda städningar i klartext ur get_timer/get_server_timer. Tomt = inga aktiva."""
+    ut = []
+    for t in (rå.get("get_timer") or []) + (rå.get("get_server_timer") or []):
+        if not isinstance(t, list) or len(t) < 3 or t[1] != "on" or not isinstance(t[2], list):
+            continue
+        delar = str(t[2][0]).split() if t[2] else []
+        if len(delar) >= 5:
+            dagar = delar[4]
+            namn = {"*": "varje dag", "1,2,3,4,5": "vardagar", "0,6": "helger"}.get(dagar)
+            if not namn:
+                dn = ["sön", "mån", "tis", "ons", "tor", "fre", "lör"]
+                namn = ", ".join(dn[int(d) % 7] for d in dagar.split(",") if d.isdigit()) or dagar
+            ut.append(f"{namn} kl. {_klock(delar[1], delar[0])}")
+        else:
+            ut.append("aktivt schema")
+    return ut
+
+
+def _wifi(rssi: Any) -> str | None:
+    if not isinstance(rssi, (int, float)):
+        return None
+    omd = "utmärkt" if rssi >= -50 else "bra" if rssi >= -60 else "okej" if rssi >= -70 else "svag"
+    return f"{rssi} dBm ({omd})"
+
+
+def _forsta(v: Any) -> Any:
+    return v[0] if isinstance(v, list) and v else v
+
+
+def installningar(status: dict | None, foton: dict | None) -> list[dict]:
+    """Robotens inställningar i klartext, grupperade. Inga serienummer, MAC, IP, tokens eller e-post."""
+    status = status or {}
+    st, dnd, rå = status.get("status", {}), status.get("dnd", {}), status.get("rå", {})
+    enhet = status.get("enhet") or {}
+
+    def av_pa(v):
+        return None if v is None else ("på" if v else "av")
+
+    def post(namn, varde):
+        return {"namn": namn, "varde": varde} if varde not in (None, "") else None
+
+    dnd_txt = None
+    if dnd:
+        dnd_txt = (f"{_klock(dnd.get('startHour'), dnd.get('startMinute'))}–{_klock(dnd.get('endHour'), dnd.get('endMinute'))}"
+                   + ("" if dnd.get("enabled") else " (avstängt)"))
+    schema = _schema(rå)
+    mattor = _forsta(rå.get("get_carpet_mode"))
+    mattor = mattor if isinstance(mattor, dict) else {}
+    vol = _forsta(rå.get("get_sound_volume"))
+    lasning = rå.get("get_child_lock_status")
+    dal = _forsta(rå.get("get_valley_electricity_timer"))
+    dal = dal if isinstance(dal, dict) else {}
+    kam = _forsta(rå.get("get_camera_status"))
+    kam = kam if isinstance(kam, int) else st.get("cameraStatus")
+    hinderfoto = bool((kam >> HINDERFOTO_BIT) & 1) if isinstance(kam, int) else None
+    ai = (foton or {}).get("ai_hinder_stöds")
+    fan, vatten, mopp = st.get("fanPower"), st.get("waterBoxMode"), st.get("mopMode")
+
+    grupper = [
+        ("Städning", [
+            post("Schema", ", ".join(schema) if schema else "Inga schemalagda städningar"),
+            post("Sugkraft", SUGKRAFT.get(fan, f"kod {fan}") if fan is not None else None),
+            post("Vattenflöde (mopp)", VATTENFLODE.get(vatten, f"kod {vatten}") if vatten is not None else None),
+            post("Moppläge", MOPPLAGE.get(mopp, f"kod {mopp}") if mopp is not None else None),
+            post("Mattläge (mer sug på mattor)", av_pa(mattor.get("enable")) if mattor else None),
+            post("Automatisk tömning i dockan", av_pa(st.get("autoDustCollection"))),
+        ]),
+        ("Kamera och hinder", [
+            post("Hinderfoton", av_pa(hinderfoto)),
+            post("AI-hinderigenkänning", None if ai is None else ("stöds" if ai else "stöds inte")),
+            post("Kollisionsundvikande", av_pa(st.get("collisionAvoidStatus"))),
+        ]),
+        ("Ljud och tider", [
+            post("Stör ej", dnd_txt),
+            post("Volym", f"{vol} %" if isinstance(vol, int) else None),
+            post("Laddning på billig el", None if not dal else (
+                f"{_klock(dal.get('start_hour'), dal.get('start_minute'))}–{_klock(dal.get('end_hour'), dal.get('end_minute'))}"
+                if dal.get("enabled") else "av")),
+            post("Barnlås", av_pa(lasning.get("lock_status")) if isinstance(lasning, dict) else None),
+        ]),
+        ("Enhet", [
+            post("Modell", enhet.get("modell")),
+            post("Firmware", enhet.get("firmware")),
+            post("WiFi-signal", _wifi(status.get("wifi_rssi"))),
+            post("Anslutning", None if "lokal" not in enhet else ("lokalt nätverk" if enhet["lokal"] else "via molnet")),
+        ]),
+    ]
+    return [{"grupp": g, "poster": [p for p in ps if p]} for g, ps in grupper if any(ps)]
+
+
+def _foto_namn(pid: str) -> str:
+    return re.sub(r"[^\w-]", "_", str(pid))[:80]
+
+
+def _hinderfoton(foton: dict | None, karta: dict | None) -> list[dict]:
+    """Hinderfoton som faktiskt hämtats (bara om kameran tillåter). Filerna krypteras in av kryptera_in."""
+    if not foton or not foton.get("sparade"):
+        return []
+    beskr = {}
+    for o in (karta or {}).get("hinder_med_foto", []) + (karta or {}).get("ignorerade_hinder_med_foto", []):
+        if o.get("photo_name"):
+            b = (o.get("description") or "").strip().lower()
+            beskr[_foto_namn(o["photo_name"])] = HINDERNAMN.get(b, b.capitalize() if b else "Hinder")
+    ut = []
+    for f in foton["sparade"]:
+        stam = _foto_namn(pathlib.Path(f).stem)
+        if pathlib.Path(f).exists() or (ROT / "data" / "valv" / "robot" / "foton" / f"{stam}.jpg.enc").exists():
+            ut.append({"id": stam, "fil": f"robot/foton/{stam}.jpg", "namn": beskr.get(stam, "Hinder")})
+    return ut
+
+
+def innehallshash(robot_json: pathlib.Path | None = None) -> str:
+    """Hash av robot.json UTAN tidsstämplar (batteri avrundat till 20 %) – visar om något faktiskt ändrats."""
+    d = json.loads((robot_json or UT / "robot.json").read_text(encoding="utf-8"))
+    d.pop("publicerad", None)
+    d.pop("uppdaterad", None)
+    st = dict(d.get("status") or {})
+    st.pop("hamtad", None)
+    if isinstance(st.get("batteri"), (int, float)):
+        st["batteri"] = int(st["batteri"] // 20)
+    d["status"] = st
+    return hashlib.sha256(json.dumps(d, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def _node_skriv(logiskt: str, fil: str) -> None:
+    r = subprocess.run(["node", str(ROT / "verktyg" / "valv.js"), "skriv", logiskt, fil],
+                       cwd=ROT, capture_output=True, text=True, encoding="utf-8", creationflags=DOLT)
+    if r.returncode != 0:
+        raise SystemExit(f"valv.js skriv {logiskt} misslyckades: {r.stderr.strip()}")
+    print(r.stdout.strip())
+
+
 def kryptera_in(sammanfattning: dict) -> None:
-    """Lägg båda filerna krypterade i data/valv/robot/ (Node-valvet, samma format som sajten)."""
+    """Lägg filerna krypterade i data/valv/robot/ (Node-valvet, samma format som sajten)."""
     for logiskt, fil in (("robot/karta.png", sammanfattning["karta"]), ("robot/robot.json", sammanfattning["json"])):
-        r = subprocess.run(["node", str(ROT / "verktyg" / "valv.js"), "skriv", logiskt, fil],
-                           cwd=ROT, capture_output=True, text=True, encoding="utf-8")
-        if r.returncode != 0:
-            raise SystemExit(f"valv.js skriv {logiskt} misslyckades: {r.stderr.strip()}")
-        print(r.stdout.strip())
+        _node_skriv(logiskt, fil)
+    # Hinderfoton: skalas om och sparas på nytt utan metadata; krypteras bara om de inte redan ligger i valvet.
+    robot = json.loads(pathlib.Path(sammanfattning["json"]).read_text(encoding="utf-8"))
+    kalla = {_foto_namn(pathlib.Path(f).stem): f for f in (_las("foton.json") or {}).get("sparade", [])}
+    for foto in robot.get("hinderfoton", []):
+        mal = ROT / "data" / "valv" / "robot" / "foton" / f"{foto['id']}.jpg.enc"
+        if mal.exists() or foto["id"] not in kalla:
+            continue
+        bild = Image.open(kalla[foto["id"]]).convert("RGB")
+        bild.thumbnail((FOTO_MAXSIDA, FOTO_MAXSIDA))
+        ren = UT / "foton" / f"{foto['id']}.jpg"
+        ren.parent.mkdir(parents=True, exist_ok=True)
+        bild.save(ren, "JPEG", quality=75)  # nysparad bild – ingen EXIF följer med
+        _node_skriv(foto["fil"], str(ren))
 
 
 if __name__ == "__main__":

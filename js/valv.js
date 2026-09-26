@@ -10,7 +10,7 @@
   const HV = (window.HV = window.HV || {});
   const BAS = 'data/valv/';
   const FOTO_RE = /^data\/foton\/([\w.-]+\.jpe?g)$/i;
-  const GENERISK_RE = /^robot\/[\w-]+\.(png|json)$/; // samma som verktyg/valv.js
+  const GENERISK_RE = /^robot\/(foton\/)?[\w-]+\.(png|json|jpg)$/; // samma som verktyg/valv.js
   const APPSKRIPT = ['js/karta.js', 'js/ml.js', 'js/hushall.js', 'js/robot.js', 'js/app.js'];
 
   let nyckel = null;

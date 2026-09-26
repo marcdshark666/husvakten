@@ -50,6 +50,7 @@ LASKOMMANDON: set[str] = {
     C.GET_CUSTOMIZE_CLEAN_MODE, C.GET_MAP_STATUS, C.APP_GET_INIT_STATUS,
     C.GET_LED_STATUS, C.GET_VALLEY_ELECTRICITY_TIMER, C.GET_NETWORK_INFO,
 }
+HISTORIK_MAX = 50  # så många städposter som roboten lämnar ut (S7 MaxV ger i praktiken 20)
 # Kommandon som FLYTTAR roboten eller startar kamera – skickas aldrig av CLI:t.
 RORELSEKOMMANDON: set[str] = {
     C.APP_GOTO_TARGET, C.APP_SEGMENT_CLEAN, C.APP_START_PATROL, C.APP_START_PET_PATROL,
@@ -139,23 +140,27 @@ async def hamta_status(dev) -> dict:
     await forsok(fel, "dnd", p.dnd.refresh())
     ut: dict = {
         "hamtad": nu(),
-        "enhet": {"namn": dev.name, "modell": dev.product.model, "lokal": dev.is_local_connected},
+        "enhet": {"namn": dev.name, "modell": dev.product.model, "lokal": dev.is_local_connected,
+                  "firmware": getattr(dev.device_info, "fv", None)},
         "status": p.status.as_dict(),
         "consumables": p.consumables.as_dict(),
         "dnd": p.dnd.as_dict(),
         "funktioner": {k: v for k, v in p.device_features.as_dict().items()},
         "rå": {},
     }
-    for k in (C.GET_TIMER, C.GET_SERVER_TIMER, C.GET_SERIAL_NUMBER, C.GET_FW_FEATURES,
+    for k in (C.GET_TIMER, C.GET_SERVER_TIMER, C.GET_FW_FEATURES,
               C.GET_SOUND_VOLUME, C.GET_CHILD_LOCK_STATUS, C.GET_CARPET_MODE,
               C.GET_CUSTOMIZE_CLEAN_MODE, C.GET_MAP_STATUS, C.GET_CAMERA_STATUS,
               C.GET_VALLEY_ELECTRICITY_TIMER):
         ut["rå"][str(k.value)] = await forsok(fel, str(k.value), las(dev, k))
+    # Nätverk: spara BARA signalstyrkan (IP, MAC, SSID och BSSID lämnar aldrig roboten här).
+    natet = await forsok(fel, "network_info", las(dev, C.GET_NETWORK_INFO))
+    ut["wifi_rssi"] = natet.get("rssi") if isinstance(natet, dict) else None
     ut["fel"] = fel
     return ut
 
 
-async def hamta_historik(dev, antal: int = 30) -> dict:
+async def hamta_historik(dev, antal: int = HISTORIK_MAX) -> dict:
     p = dev.v1_properties
     fel: dict = {}
     await forsok(fel, "clean_summary", p.clean_summary.refresh())
@@ -309,7 +314,9 @@ async def hamta_foton(dev, karta: dict | None = None) -> dict:
     ids = [i for i in ids if i]
     ut["foto_id"] = ids
     ut["sparade"] = []
-    if ids and p.obstacle_photos is None:
+    if ids and ut.get("hinderfoto_på") is False:
+        ut["hoppade_over"] = "hinderfoton är avstängda i roboten"
+    elif ids and p.obstacle_photos is None:
         fel["foton"] = "obstacle_photos-traiten saknas för enheten"
     elif ids:
         mapp = DATA / "foton"

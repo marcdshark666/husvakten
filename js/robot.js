@@ -11,6 +11,7 @@
   const ORBIT_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js/+esm';
   const VARNA_PROCENT = 15;
   const VAGGHOJD_M = 0.28;
+  const HISTORIK_STEG = 10; // städposter per "Visa fler"
 
   const HINDERIKON = {
     clothes: '👕', shoes: '👟', sock: '🧦', cable: '🔌', 'power strip': '🔌', poop: '💩', 'pet waste': '💩',
@@ -97,7 +98,23 @@
       return;
     }
     ritad = true;
-    el.replaceChildren(statusKort(), kartKort(), stadningsKort());
+    el.replaceChildren(statusKort(), kartKort(), stadningsKort(), installningsKort(), hinderfotoKort());
+    tickaUppdaterad(el);
+  }
+
+  /** Håll "Uppdaterad för X min sedan" färsk medan fliken är öppen. */
+  let tickare = 0;
+  function tickaUppdaterad(el) {
+    clearInterval(tickare);
+    tickare = setInterval(() => {
+      if (!el.isConnected) return clearInterval(tickare);
+      for (const p of el.querySelectorAll('.robot-uppdaterad')) p.textContent = uppdateradText();
+    }, 60000);
+  }
+
+  function uppdateradText() {
+    const t = (data.status && data.status.hamtad) || data.uppdaterad || data.publicerad;
+    return t ? '🔄 Uppdaterad ' + sedan(t) + ' (' + datum(t) + ')' : '🔄 Okänd uppdateringstid';
   }
 
   // ---------- Status ----------
@@ -120,6 +137,7 @@
           h('div', { class: 'stapel ' + (batt !== null && batt < 20 ? 'lag' : 'bra'), style: 'width:' + (batt || 0) + '%' }),
           h('span', { class: 'stapel-tal' }, batt === null ? '–' : batt + ' %'))
       ),
+      h('p', { class: 'fin robot-uppdaterad' }, uppdateradText()),
       st.felkod ? h('p', { class: 'robot-fel' }, '⚠️ Felkod ' + st.felkod) : null,
       h('p', { class: 'fin' }, senast
         ? 'Senaste städning: ' + datum(senast.start) + ' · ' + senast.minuter + ' min · ' + tal(senast.yta_m2) + ' m²' + (senast.klar ? '' : ' (avbruten)')
@@ -397,19 +415,77 @@
     };
   }
 
-  // ---------- Senaste städningar ----------
+  // ---------- Städhistorik ----------
+  function stadningsRad(r) {
+    const extra = [];
+    if (r.undvek) extra.push('undvek ' + r.undvek + ' hinder');
+    if (r.startad_via) extra.push('startad via ' + r.startad_via);
+    if (r.tomd) extra.push('dockan tömde');
+    if (r.felkod) extra.push('⚠️ fel ' + r.felkod);
+    return h('li', null,
+      h('div', { class: 'robot-hist-rad' },
+        h('strong', null, datum(r.start)),
+        h('span', { class: 'robot-hist-tag ' + (r.klar ? 'klar' : 'avbruten') }, r.klar ? '✅ klar' : '⏹️ avbruten')),
+      h('div', null, r.minuter + ' min · ' + tal(r.yta_m2) + ' m²'),
+      extra.length ? h('div', { class: 'fin robot-hist-extra' }, extra.join(' · ')) : null);
+  }
+
   function stadningsKort() {
-    const lista = (data.stadningar || []).slice(0, 6);
-    return h('section', { class: 'kort', 'aria-label': 'Senaste städningar' },
-      h('h2', null, '🧹 Senaste städningar'),
-      lista.length
-        ? h('ul', { class: 'historik robot-historik' }, lista.map((r) =>
-          h('li', null,
-            h('strong', null, datum(r.start)), ' · ', r.minuter + ' min · ' + tal(r.yta_m2) + ' m²',
-            r.klar ? ' ✅' : ' ⏹️ avbruten',
-            r.undvek ? h('span', { class: 'fin' }, ' · undvek ' + r.undvek + ' hinder') : null)))
+    const alla = (data.stadningar || []).slice().sort((a, b) => (Date.parse(b.start) || 0) - (Date.parse(a.start) || 0));
+    let visade = 0;
+    const ul = h('ul', { class: 'historik robot-historik' });
+    const fler = h('button', { class: 'knapp liten robot-fler', type: 'button' });
+    function visaFler() {
+      const nasta = alla.slice(visade, visade + HISTORIK_STEG);
+      ul.append(...nasta.map(stadningsRad));
+      visade += nasta.length;
+      const kvar = alla.length - visade;
+      fler.hidden = kvar <= 0;
+      fler.textContent = 'Visa fler (' + kvar + ' kvar)';
+    }
+    fler.addEventListener('click', visaFler);
+    visaFler();
+    const klara = alla.filter((r) => r.klar).length;
+    return h('section', { class: 'kort robot-historik-kort', 'aria-label': 'Städhistorik' },
+      h('h2', null, '🧹 Städhistorik' + (alla.length ? ' (' + alla.length + ')' : '')),
+      alla.length
+        ? [h('p', { class: 'fin' }, klara + ' klara, ' + (alla.length - klara) + ' avbrutna av de ' + alla.length + ' senaste som roboten sparar.'), ul, fler]
         : h('p', { class: 'fin' }, 'Inga städningar ännu.')
     );
+  }
+
+  // ---------- Inställningar ----------
+  function installningsKort() {
+    const grupper = data.installningar || [];
+    if (!grupper.length) return null;
+    return h('section', { class: 'kort robot-installningar', 'aria-label': 'Robotens inställningar' },
+      h('h2', null, '⚙️ Inställningar'),
+      grupper.map((g) => h('div', { class: 'robot-inst-grupp' },
+        h('h3', null, g.grupp),
+        h('dl', null, (g.poster || []).map((p) => [h('dt', null, p.namn), h('dd', null, String(p.varde))])))),
+      h('p', { class: 'fin' }, 'Avläst direkt ur roboten – ändras i Roborock-appen. Husvakten skickar aldrig ändringar till roboten.')
+    );
+  }
+
+  // ---------- Hinderfoton ----------
+  function hinderfotoKort() {
+    const foton = data.hinderfoton || [];
+    if (!foton.length) return null;
+    const rutnat = h('div', { class: 'robot-foton' });
+    for (const f of foton) {
+      const fig = h('figure', { class: 'robot-foto' }, h('div', { class: 'robot-foto-laddar' }, '…'), h('figcaption', null, f.namn || 'Hinder'));
+      rutnat.appendChild(fig);
+      HV.valv.lasFil(f.fil).then((buf) => {
+        const url = URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' }));
+        fig.firstChild.replaceWith(h('img', { src: url, alt: 'Hinderfoto: ' + (f.namn || 'hinder'), loading: 'lazy' }));
+      }).catch((e) => {
+        console.warn('Husvakten: hinderfoto kunde inte dekrypteras', f.fil, e);
+        fig.firstChild.textContent = '⚠️';
+      });
+    }
+    return h('section', { class: 'kort', 'aria-label': 'Hinderfoton' },
+      h('h2', null, '📷 Hinderfoton (' + foton.length + ')'), rutnat,
+      h('p', { class: 'fin' }, 'Tagna av robotens kamera vid hinder. Ligger krypterade i valvet.'));
   }
 
   HV.robot = {

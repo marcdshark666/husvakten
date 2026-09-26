@@ -286,8 +286,8 @@
         (rum.length ? rum.map((r) => r.namn).join(', ') : 'okända rum') + '.'),
       rum.length ? h('ul', { class: 'skanning-lista' }, rum.map((r) => h('li', { class: r.fritt ? 'fritt' : 'fynd' },
         h('div', { class: 'skanning-rum' }, h('strong', null, r.namn), ' ',
-          r.fritt ? h('span', { class: 'skanning-fritt' }, 'golvet fritt ✅')
-            : h('span', { class: 'skanning-antal' }, (r.fynd || []).length + ' fynd')),
+          r.fritt ? h('span', { class: 'skanning-fritt' }, 'golvet fritt ✅' + ((r.fynd || []).length ? ' (' + r.fynd.length + ' hinder, inget skräp)' : ''))
+            : h('span', { class: 'skanning-antal' }, (r.fynd || []).filter((f) => f.smuts !== false).length + ' fynd att plocka')),
         (r.fynd || []).map((f) => h('div', { class: 'skanning-fynd' },
           h('div', null, (f.ikon || '❓') + ' ' + (f.namn || 'Hinder') + (f.tid ? ' · ' + klocka(f.tid) : '')),
           f.foto ? robotFoto(f.foto, 'Robotens foto: ' + (f.namn || 'hinder')) : null,

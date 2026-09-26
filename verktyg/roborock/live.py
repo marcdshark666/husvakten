@@ -579,7 +579,24 @@ class Vakt:
             k["sedda"].append(nyckel)
             await self.nytt_fynd(o, tid)
 
+        self._komplettera_ai()
         return "pagar" if aktiv else "klar"
+
+    def _komplettera_ai(self) -> None:
+        """Fynd som saknar AI-bedömning (t.ex. från en körning utan AI) bedöms i efterhand – ett per varv."""
+        if self.ingen_ai:
+            return
+        k = self.st.get("korning") or {}
+        for f in k.get("fynd") or []:
+            if "ai" in f or not f.get("lokal") or not pathlib.Path(f["lokal"]).exists():
+                continue
+            f["ai"] = ai_bedom(pathlib.Path(f["lokal"]), self.stig, f.get("rum"), f.get("namn") or "hinder")
+            for h in self.logg["handelser"]:
+                if h.get("typ") == "fynd" and h.get("foto") and h.get("foto") == f.get("foto"):
+                    h["ai"] = f["ai"]
+            logg(f"AI i efterhand: {f.get('namn')} → {f['ai']['bedomning']}")
+            self.viktig()
+            return
 
     def _unika_hinder(self, lista: list[dict]) -> list[dict]:
         ut: dict[str, dict] = {}
@@ -705,6 +722,8 @@ class Vakt:
     def golvvakt(self, k: dict, klar: bool, tid: str) -> None:
         perrum: dict[str, list[dict]] = {}
         for f in k["fynd"]:
+            if not ar_smuts(f):
+                continue
             perrum.setdefault(f.get("rum") or "?", []).append(f)
         rum = list(dict.fromkeys(k["rum"] + [r for r in perrum if r != "?"]))
         for r in rum:
@@ -740,10 +759,11 @@ class Vakt:
         perrum: dict[str, list] = {}
         for f in fynd:
             perrum.setdefault(f.get("rum") or "Okänt rum", []).append(
-                {x: f.get(x) for x in ("namn", "ikon", "foto", "ai", "tid", "klass") if f.get(x)})
+                {**{x: f.get(x) for x in ("namn", "ikon", "foto", "ai", "tid", "klass") if f.get(x)}, "smuts": ar_smuts(f)})
         rum = list(dict.fromkeys((k.get("rum") or []) + list(perrum)))
         return {"korning": k.get("id"), "start": k.get("start"), "pagar": bool(self.st.get("korning")),
-                "rum": [{"namn": r, "fynd": perrum.get(r, []), "fritt": not perrum.get(r)} for r in rum],
+                "rum": [{"namn": r, "fynd": perrum.get(r, []), "fritt": not any(f["smuts"] for f in perrum.get(r, []))}
+                        for r in rum],
                 "foton": sum(1 for f in fynd if f.get("foto"))}
 
     def dokument(self) -> dict:
@@ -781,6 +801,21 @@ class Vakt:
         self.st["vantar_push"] = False
         self.st["senaste_push"] = time.time()
         skriv_json(self.stig.tillstand, self.st)
+
+
+MOBLER = {"pedestal", "furniture with a crossbar", "bed", "sofa"}
+
+
+def ar_smuts(f: dict) -> bool:
+    """Räknas fyndet som något som ligger på golvet? AI-bedömningen avgör om den finns; annars robotens klass.
+    Möbler och okända hinder som AI:n kallar rena gör inte golvet smutsigt."""
+    b = (f.get("ai") or {}).get("bedomning")
+    if b in ("smutsigt", "stökigt", "misstänkt"):
+        return True
+    if b == "rent":
+        return False
+    klass = f.get("klass") or ""
+    return bool(klass) and klass not in MOBLER
 
 
 def enligt_schema(start: datetime, schema: list[str]) -> bool:

@@ -239,6 +239,16 @@
       "person": "Ada",
       "notis": "Duschen städad av Ada (bild ej sparad – spegling av person)",
       "uppgift": "Städa duschen"
+    },
+    {
+      "id": "e-20260926-114815-91kh",
+      "tid": "2026-09-26T11:48:15+02:00",
+      "objektId": "diskmaskin",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Disken är klar och ren – Marc plockar ur. Riskokarkärlet och locket på bänken diskas för hand",
+      "uppgift": "Plocka ur disken",
+      "bild": "data/foton/20260926-114815-diskmaskin.jpg"
     }
   ],
   "tilldelningar": {
@@ -256,7 +266,7 @@
     },
     "diskmaskin": {
       "person": "Marc",
-      "tid": "2026-09-26T07:31:21.431Z"
+      "tid": "2026-09-26T09:48:40.221Z"
     },
     "diskho": {
       "person": "Marc",
@@ -376,7 +386,14 @@
       "etikett": "startad",
       "bild": "data/foton/20260926-112738-torktumlare.jpg",
       "tid": "2026-09-26T11:27:38+02:00"
+    },
+    {
+      "id": "t-20260926-114815-91kh",
+      "objektId": "diskmaskin",
+      "etikett": "renfull",
+      "bild": "data/foton/20260926-114815-diskmaskin.jpg",
+      "tid": "2026-09-26T11:48:15+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T09:30:47.090Z"
+  "uppdaterad": "2026-09-26T09:48:40.221Z"
 }

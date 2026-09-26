@@ -7,6 +7,10 @@
   const { lagring } = HV;
 
   const PERSONER = ['Marc', 'Ada'];
+  // Robot = robotdammsugarens golvvakt (verktyg/roborock/live.py). Visas som 🤖 Robot men räknas
+  // aldrig i statistik, tilldelning eller rättvis fördelning.
+  const ROBOT = 'Robot';
+  const KANDA = [...PERSONER, ROBOT];
   const STATUSAR = ['smutsig', 'pagar', 'ren'];
   const LS_HANDELSER = 'husvakten.handelser';
   const LS_TILLDELNINGAR = 'husvakten.tilldelningar';
@@ -28,7 +32,7 @@
     if (!h || typeof h !== 'object') return null;
     const t = tidMs(h.tid);
     if (t === null || !h.objektId || !STATUSAR.includes(h.status)) return null;
-    const person = PERSONER.includes(h.person) ? h.person : null;
+    const person = KANDA.includes(h.person) ? h.person : null;
     let bild = null;
     if (typeof h.bild === 'string') {
       if (/^data\/foton\/[\w.-]+\.jpe?g$/i.test(h.bild) || /^idb:[\w-]+$/.test(h.bild)) bild = h.bild;
@@ -176,7 +180,7 @@
 
   /** En "insats" = någon startade (pågår) eller gjorde rent. */
   function arInsats(h) {
-    return !h.auto && h.person && (h.status === 'ren' || h.status === 'pagar');
+    return !h.auto && PERSONER.includes(h.person) && (h.status === 'ren' || h.status === 'pagar');
   }
 
   function statistik(period, nu) {
@@ -226,8 +230,15 @@
     lagring.sparaJson(LS_TILLDELNINGAR, lokalaTill);
   }
 
+  /** Visningsnamn: Robot → 🤖 Robot. */
+  function personText(p, reserv) {
+    return p === ROBOT ? '🤖 Robot' : p || (reserv === undefined ? '–' : reserv);
+  }
+
   HV.hushall = {
     PERSONER,
+    ROBOT,
+    personText,
     laddaRepo,
     repo: () => repo,
     allaHandelser,

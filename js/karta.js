@@ -84,6 +84,12 @@
     { id: 'spegelskap', namn: 'Spegelskåpet & handfatet', emoji: '🪞', rum: 'badrum', x: 839, y: 730 },
     { id: 'dusch', namn: 'Duschen', emoji: '🚿', rum: 'badrum', x: 868, y: 800 },
     { id: 'torktumlare', namn: 'Torktumlaren', emoji: '🌀', rum: 'badrum', x: 812, y: 798, typ: 'disk', timerMin: 60, efterTimer: 'paminn' },
+    // Golvvakten: robotdammsugarens rum (se verktyg/roborock/live.py OBJEKT_FOR_RUM). Status sätts av
+    // roboten (person Robot): smutsigt när den hittat saker på golvet, rent efter en körning utan fynd.
+    // Rum 1/Rum 2 är robotens namnlösa rum – placerade efter storlek (Rum 2 ≈ 12 m², Rum 1 ≈ 2 m²).
+    { id: 'golv-vardagsrum', namn: 'Golvet – Vardagsrum & kök', emoji: '🧹', rum: 'vardagsrum', x: 440, y: 425, robotRum: 'Vardagsrum', status: 'ren' },
+    { id: 'golv-rum2', namn: 'Golvet – Rum 2', emoji: '🧹', rum: 'sovrum', x: 800, y: 575, robotRum: 'Rum 2', status: 'ren' },
+    { id: 'golv-rum1', namn: 'Golvet – Rum 1', emoji: '🧹', rum: 'lillarummet', x: 930, y: 752, robotRum: 'Rum 1', status: 'ren' },
   ];
 
   const RANG = { smutsig: 3, pagar: 2, ren: 1 };
@@ -95,6 +101,7 @@
     badrumsbank: 2, torkstallning: 2, spegelskap: 2, dusch: 2, torktumlare: 2, diskmaskin: 2, hallskap: 2,
     vaxter: 2, monstera: 2, palettblad: 2, schefflera: 2, kaktus: 3, clusia: 2,
     sovrum: 3, balkong: 3, lampbord: 3, kabelhorna: 3, tvattmaskin: 3,
+    'golv-vardagsrum': 2, 'golv-rum2': 2, 'golv-rum1': 2,
   };
 
   // Vattningsintervall i dagar: "ren" = vattnad; när intervallet gått blir objektet smutsigt (dags att vattna).

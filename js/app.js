@@ -472,7 +472,7 @@
           a.status === 'pagar' && a.timerSlut
             ? h('span', { class: 'nedrakning stor', 'data-slut': String(a.timerSlut) }, formatTid(a.timerSlut - Date.now()))
             : null,
-          s ? h('p', { class: 'fin' }, (s.person || 'Någon') + ' ' + HANDLINGSTEXT[s.status] + ' ' + formatDatum(s.t) + (s.notis ? ' · ' + s.notis : '') + (a.utgangen ? ' · timern har gått ut' : '')) : null
+          s ? h('p', { class: 'fin' }, hushall.personText(s.person, 'Någon') + ' ' + HANDLINGSTEXT[s.status] + ' ' + formatDatum(s.t) + (s.notis ? ' · ' + s.notis : '') + (a.utgangen ? ' · timern har gått ut' : '')) : null
         )
       ),
       h('p', { class: 'fin' }, 'Sätt status själv:'),
@@ -500,7 +500,7 @@
         egna.map((x) =>
           h('li', null,
             h('span', { class: 'badge st-' + x.status }, STATUSTEXT[x.status]), ' ',
-            h('strong', null, x.person || '–'), ' ', formatDatum(x.t),
+            h('strong', null, hushall.personText(x.person)), ' ', formatDatum(x.t),
             x.timerMin ? ' · ' + x.timerMin + ' min' : '',
             x.bild ? ' · 📷' : '',
             x.kalla === 'delad' ? ' ☁️' : ''
@@ -940,7 +940,7 @@
       return sb - sa;
     });
     const maxObj = Math.max(1, ...perObjekt.flatMap(([, v]) => Object.values(v)));
-    const senaste = hushall.allaHandelser().filter((x) => x.t >= st.fran && x.person).slice(-15).reverse();
+    const senaste = hushall.allaHandelser().filter((x) => x.t >= st.fran && hushall.PERSONER.includes(x.person)).slice(-15).reverse();
     const periodText = { vecka: 'den här veckan', manad: 'den här månaden', allt: 'totalt' }[period];
     $('#statistik').replaceChildren(
       h('p', { class: 'mest' }, st.mest ? '🏆 ' + st.mest + ' har gjort mest ' + periodText + '!' : 'Jämnt ' + periodText + ' ⚖️'),
@@ -994,7 +994,7 @@
           h('span', { class: 'galleri-text' },
             h('span', { class: 'badge st-' + x.status }, STATUSTEXT[x.status]),
             h('span', null, (o ? o.emoji + ' ' + o.namn : x.objektId)),
-            h('span', { class: 'fin' }, (x.person || '–') + ' · ' + formatDatum(x.t))
+            h('span', { class: 'fin' }, hushall.personText(x.person) + ' · ' + formatDatum(x.t))
           )
         )
       );
@@ -1006,7 +1006,7 @@
     $('#visare-inne').replaceChildren(
       h('img', { class: 'visare-bild', src: url, alt: 'Bild' }),
       h('p', null, h('span', { class: 'badge st-' + x.status }, STATUSTEXT[x.status]), ' ', h('strong', null, o ? o.namn : x.objektId)),
-      h('p', { class: 'fin' }, (x.person || '–') + ' ' + HANDLINGSTEXT[x.status] + ' ' + formatDatum(x.t) + (x.timerMin ? ' · timer ' + x.timerMin + ' min' : '') + (x.notis ? ' · ' + x.notis : '')),
+      h('p', { class: 'fin' }, hushall.personText(x.person) + ' ' + HANDLINGSTEXT[x.status] + ' ' + formatDatum(x.t) + (x.timerMin ? ' · timer ' + x.timerMin + ' min' : '') + (x.notis ? ' · ' + x.notis : '')),
       h('button', { class: 'knapp bred', 'data-stang': true }, 'Stäng')
     );
     oppnaDialog($('#visare'));

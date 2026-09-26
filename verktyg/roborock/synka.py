@@ -88,11 +88,30 @@ def hamta() -> None:
         raise RuntimeError(f"robo.py alla gav slutkod {kod}")
 
 
+def starta_live_om_aktiv(live) -> str:
+    """Roboten igång (enligt nyss hämtade status.json) → starta livebevakaren (Vaktloggen) i bakgrunden."""
+    try:
+        st = (json.loads((HEM / "data" / "status.json").read_text(encoding="utf-8")) or {}).get("status") or {}
+    except (OSError, ValueError):
+        return ""
+    if not live.ar_aktiv(st):
+        return ""
+    return " · livebevakaren startad" if live.starta_bakgrund() else " · livebevakaren kör redan"
+
+
 def synka(tvinga: bool) -> str:
     sys.path.insert(0, str(HAR))
+    import live  # noqa: E402
     import publicera  # noqa: E402
 
+    if live.kor_redan() and not tvinga:  # färre robotanrop – live.py publicerar själv när körningen är klar
+        return "livebevakaren kör – hoppar över synken"
     hamta()
+    startad = starta_live_om_aktiv(live)
+    return _synka(tvinga, publicera, live) + startad
+
+
+def _synka(tvinga: bool, publicera, live) -> str:
     info = publicera.bygg()
     ny = publicera.innehallshash()
     tillst = las_tillstand()
@@ -103,6 +122,11 @@ def synka(tvinga: bool) -> str:
     if sedan < MIN_MELLAN_COMMITS_S and not tvinga:
         return f"ändrat, men senaste robotcommit är bara {round(sedan / 60)} min gammal – väntar"
 
+    with live.git_las():
+        return _publicera(info, ny, publicera)
+
+
+def _publicera(info: dict, ny: str, publicera) -> str:
     git("pull", "--rebase", "--autostash")
     utdata = io.StringIO()
     with contextlib.redirect_stdout(utdata):

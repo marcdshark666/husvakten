@@ -6,6 +6,8 @@
  *        [--bild foto.jpg] [--timer 43] [--tid 2026-09-26T08:51:51+02:00] [--notis "30° Mörk tvätt"] \
  *        [--uppgift "Plocka ur disken"] [--lar-in renfull] [--tilldela Ada] [--dry-run]
  *
+ * --person: Marc | Ada | Robot (Robot = golvvakten; räknas inte i statistik/rättvis fördelning).
+ *
  * --status: smutsig | pagar (pågår) | ren, eller etiketterna tom/fylld/startad.
  * --tid:    utelämnad → bildens EXIF-tid (tolkas som Europe/Stockholm) → annars nu.
  * --bild:   skalas till max 1280 px lång sida, JPEG kvalitet 75, ALL metadata (EXIF/GPS/XMP/ICC) tas bort.
@@ -24,7 +26,8 @@ const vm = require('vm');
 const valv = require('./valv');
 
 const ROT = path.resolve(__dirname, '..');
-const PERSONER = ['Marc', 'Ada'];
+const PERSONER = ['Marc', 'Ada', 'Robot']; // Robot = robotdammsugarens golvvakt (verktyg/roborock/live.py)
+const TILLDELBARA = ['Marc', 'Ada'];
 const ETIKETTER = ['ren', 'smutsig', 'tom', 'fylld', 'startad', 'renfull'];
 const STATUSALIAS = {
   smutsig: 'smutsig', fylld: 'smutsig', dirty: 'smutsig',
@@ -228,7 +231,7 @@ async function main() {
   }
 
   if (a.tilldela) {
-    const p = PERSONER.find((x) => x.toLowerCase() === String(a.tilldela).toLowerCase());
+    const p = TILLDELBARA.find((x) => x.toLowerCase() === String(a.tilldela).toLowerCase());
     if (!p && a.tilldela.toLowerCase() !== 'ingen') fel('okänd --tilldela: ' + a.tilldela);
     data.tilldelningar[objekt.id] = { person: p || null, tid: new Date().toISOString() };
   }

@@ -25,6 +25,13 @@
   let ritad = false;
   const val = { vag: false, hinder: true, tre: false };
   let tre = null;        // { renderer, stang }
+  let vakt = null;       // robot/logg.json (Vaktloggen från verktyg/roborock/live.py)
+  let vaktFel = null;
+  let vaktAldre = false; // "Visa äldre händelser" utfälld
+  let vaktTimer = 0;
+  const VAKT_POLL_MS = 60000;
+  const PAGAR_MAX_MIN = 15; // "pågår nu" bara om loggen uppdaterats nyligen
+  const fotoCache = new Map(); // robot/foton/<id>.jpg -> Promise<objectURL|null>
 
   // ---------- Hjälpare ----------
   function h(tag, attr, ...barn) {
@@ -89,7 +96,7 @@
     if (!el || ritad) return;
     if (!data) el.replaceChildren(h('section', { class: 'kort' }, h('p', { class: 'fin' }, '🤖 Dekrypterar robotdatan …')));
     try {
-      await ladda();
+      await Promise.all([ladda(), laddaVakt()]);
     } catch (e) {
       el.replaceChildren(h('section', { class: 'kort' },
         h('h2', null, '🤖 Robot'),
@@ -98,9 +105,10 @@
       return;
     }
     try {
-      el.replaceChildren(statusKort(), kartKort(), stadningsKort(), installningsKort() || '', hinderfotoKort() || '');
+      el.replaceChildren(vaktKort(), skanningsKort(), statusKort(), kartKort(), stadningsKort(), installningsKort() || '', hinderfotoKort() || '');
       ritad = true;
       tickaUppdaterad(el);
+      bevakaVakt(el);
     } catch (e) {
       console.error('Husvakten: robotfliken kunde inte ritas', e);
       el.replaceChildren(h('section', { class: 'kort' }, h('h2', null, '🤖 Robot'),
@@ -121,6 +129,170 @@
   function uppdateradText() {
     const t = (data.status && data.status.hamtad) || data.uppdaterad || data.publicerad;
     return t ? '🔄 Uppdaterad ' + sedan(t) + ' (' + datum(t) + ')' : '🔄 Okänd uppdateringstid';
+  }
+
+  // ---------- Vaktloggen (📡 live-tidslinje från verktyg/roborock/live.py) ----------
+  async function laddaVakt() {
+    try {
+      const buf = await HV.valv.lasFil('robot/logg.json');
+      const d = JSON.parse(new TextDecoder().decode(buf));
+      if (!d || d.version !== 1 || !Array.isArray(d.handelser)) throw new Error('Okänt format på vaktloggen');
+      vakt = d;
+      vaktFel = null;
+    } catch (e) {
+      // 404 = ingen logg ännu (inget fel att visa); annat fel visas diskret, gammal data behålls
+      vaktFel = /HTTP 404/.test(e.message) ? null : e.message;
+    }
+  }
+
+  /** Hämta om loggen var 60:e s så länge robotfliken är öppen och synlig. */
+  function bevakaVakt(el) {
+    clearInterval(vaktTimer);
+    vaktTimer = setInterval(async () => {
+      if (!el.isConnected) return clearInterval(vaktTimer);
+      if (el.hidden || document.hidden) return;
+      const fore = vakt && vakt.uppdaterad;
+      await laddaVakt();
+      if (vakt && vakt.uppdaterad === fore && !vaktFel) {
+        for (const p of el.querySelectorAll('.vakt-uppdaterad')) p.textContent = vaktUppdateradText();
+        return;
+      }
+      const a = el.querySelector('.robot-vakt');
+      const b = el.querySelector('.robot-skanning');
+      if (a) a.replaceWith(vaktKort());
+      if (b) b.replaceWith(skanningsKort());
+    }, VAKT_POLL_MS);
+  }
+
+  function pagarNu() {
+    if (!vakt || !vakt.pagar) return false;
+    const t = Date.parse(vakt.uppdaterad || '');
+    return Number.isFinite(t) && Date.now() - t < PAGAR_MAX_MIN * 6e4;
+  }
+
+  const klockFmt = new Intl.DateTimeFormat('sv-SE', { hour: '2-digit', minute: '2-digit' });
+  function klocka(iso) {
+    const t = Date.parse(iso || '');
+    return Number.isFinite(t) ? klockFmt.format(new Date(t)) : '–';
+  }
+
+  function vaktUppdateradText() {
+    return vakt && vakt.uppdaterad ? '🔄 Loggen uppdaterad ' + sedan(vakt.uppdaterad) + ' · hämtas om var 60:e s medan fliken är öppen' : '';
+  }
+
+  /** Robotens hinderfoto (krypterat i valvet) – dekrypteras en gång per session. */
+  function robotFoto(fil, alt) {
+    const fig = h('div', { class: 'vakt-foto' }, h('span', { class: 'robot-foto-laddar' }, '📷'));
+    if (!fotoCache.has(fil)) {
+      fotoCache.set(fil, HV.valv.lasFil(fil).then(
+        (buf) => URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' })),
+        (e) => {
+          console.warn('Husvakten: robotfoto kunde inte dekrypteras', fil, e);
+          fotoCache.delete(fil);
+          return null;
+        }));
+    }
+    fotoCache.get(fil).then((url) => {
+      if (url) fig.replaceChildren(h('img', { src: url, alt, loading: 'lazy' }));
+      else fig.firstChild.textContent = '⚠️';
+    });
+    return fig;
+  }
+
+  const BEDOMNINGSTEXT = { smutsigt: 'smutsigt', stokigt: 'stökigt', rent: 'rent', misstankt: 'misstänkt', oklart: 'oklart' };
+  function bedomningsNyckel(b) {
+    const n = String(b || 'oklart').normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return BEDOMNINGSTEXT[n] ? n : 'oklart';
+  }
+  function aiRad(ai) {
+    if (!ai) return null;
+    const n = bedomningsNyckel(ai.bedomning);
+    return h('div', { class: 'vakt-ai ai-' + n },
+      h('span', { class: 'vakt-ai-tag' }, '🧠 AI: ' + BEDOMNINGSTEXT[n]),
+      h('span', null, ai.text || ''));
+  }
+
+  function vaktRad(x) {
+    return h('li', { class: 'vakt-rad typ-' + String(x.typ || 'info').replace(/[^\w-]/g, '') + (x.misstankt ? ' misstankt' : '') },
+      h('span', { class: 'vakt-ikon', 'aria-hidden': 'true' }, x.ikon || 'ℹ️'),
+      h('div', { class: 'vakt-innehall' },
+        h('div', null, h('span', { class: 'vakt-tid' }, klocka(x.tid)), ' ', x.text || ''),
+        x.misstankt && x.typ !== 'fel' ? h('div', { class: 'vakt-indikation' }, 'Misstänkt – bara en indikation') : null,
+        x.foto ? robotFoto(x.foto, 'Robotens foto: ' + (x.text || 'hinder')) : null,
+        aiRad(x.ai)));
+  }
+
+  function vaktKort() {
+    const rubrik = h('div', { class: 'lista-huvud' }, h('h2', null, '📡 Vaktlogg'));
+    if (!vakt) {
+      return h('section', { class: 'kort robot-vakt', 'aria-label': 'Vaktlogg' }, rubrik,
+        h('p', { class: 'fin' }, vaktFel ? 'Vaktloggen kunde inte läsas: ' + vaktFel
+          : 'Ingen vaktlogg ännu. Den startar automatiskt när roboten börjar städa och visar steg för steg vad som händer.'));
+    }
+    const pagar = pagarNu();
+    const k = pagar ? vakt.korning : vakt.senaste_korning;
+    rubrik.appendChild(h('span', { class: 'vakt-chip' + (pagar ? ' pagar' : '') },
+      pagar ? '🟢 Pågår nu' : k ? '⚪ Senaste körning' : '⚪ Ingen körning ännu'));
+    const alla = vakt.handelser.slice().sort((a, b) => (Date.parse(b.tid) || 0) - (Date.parse(a.tid) || 0));
+    const kid = k && k.id;
+    const denna = kid ? alla.filter((x) => x.korning === kid) : alla.slice(0, 12);
+    const ovriga = alla.filter((x) => !denna.includes(x));
+    const misstankta = denna.filter((x) => x.misstankt);
+    let sammanfattning = null;
+    if (pagar && k) {
+      sammanfattning = 'Startade ' + klocka(k.start) + ' via ' + (k.via || '?') + ' · ' + (k.lage || '') +
+        (k.rum_nu ? ' i ' + k.rum_nu : '') + ' · ' + (k.fynd || 0) + ' fynd hittills';
+    } else if (k) {
+      sammanfattning = datum(k.start) + '–' + klocka(k.slut) + ' · ' + (k.minuter || 0) + ' min · ' + tal(k.yta_m2) + ' m² · ' +
+        (k.fynd || 0) + ' fynd' + (k.klar ? '' : ' · avbruten');
+    }
+    const ul = h('ol', { class: 'vakt-lista' }, denna.map(vaktRad));
+    const aldre = h('ol', { class: 'vakt-lista aldre', hidden: !vaktAldre }, ovriga.map(vaktRad));
+    const etikett = () => (vaktAldre ? 'Dölj' : 'Visa') + ' äldre händelser (' + ovriga.length + ')';
+    const knapp = ovriga.length ? h('button', {
+      class: 'knapp liten', type: 'button',
+      onclick: (ev) => {
+        vaktAldre = !vaktAldre;
+        aldre.hidden = !vaktAldre;
+        ev.currentTarget.textContent = etikett();
+      },
+    }, etikett()) : null;
+    return h('section', { class: 'kort robot-vakt' + (pagar ? ' pagar' : ''), 'aria-label': 'Vaktlogg' },
+      rubrik,
+      vakt.simulerad ? h('p', { class: 'robot-fel' }, '🧪 Simulerad testdata') : null,
+      sammanfattning ? h('p', { class: 'vakt-sammanfattning' }, sammanfattning) : null,
+      misstankta.length ? h('p', { class: 'vakt-varning' }, '⚠️ ' + misstankta.length + (misstankta.length === 1 ? ' sak' : ' saker') +
+        ' att titta på – indikationer, inte säkra larm.') : null,
+      denna.length ? ul : h('p', { class: 'fin' }, 'Inga händelser ännu.'),
+      knapp, aldre,
+      vaktFel ? h('p', { class: 'fin' }, '⚠️ Senaste hämtningen misslyckades: ' + vaktFel) : null,
+      h('p', { class: 'fin vakt-uppdaterad' }, vaktUppdateradText()),
+      h('p', { class: 'fin' }, 'Roboten läses bara – Husvakten styr den aldrig. "Misstänkt" är indikationer (t.ex. start utan schema, fel, ovanliga fynd), inte säkra larm.'));
+  }
+
+  // ---------- Senaste skanningen ----------
+  function skanningsKort() {
+    const sk = vakt && vakt.skanning;
+    const rubrik = h('h2', null, '🔎 Senaste skanningen');
+    const utanFoto = h('p', { class: 'fin' }, '📷 Inga foton ännu – roboten har inte hittat/fotograferat något ännu. ' +
+      'Foton kommer efter körningar där den stöter på hinder (kläder, skor, kablar …).');
+    if (!sk) {
+      return h('section', { class: 'kort robot-skanning', 'aria-label': 'Senaste skanningen' }, rubrik,
+        h('p', { class: 'fin' }, 'Ingen skanning ännu – roboten har inte städat sedan vaktloggen startade.'), utanFoto);
+    }
+    const rum = sk.rum || [];
+    return h('section', { class: 'kort robot-skanning', 'aria-label': 'Senaste skanningen' }, rubrik,
+      h('p', { class: 'fin' }, (sk.pagar ? 'Pågår – startade ' : 'Körningen ') + datum(sk.start) + ' · roboten täckte ' +
+        (rum.length ? rum.map((r) => r.namn).join(', ') : 'okända rum') + '.'),
+      rum.length ? h('ul', { class: 'skanning-lista' }, rum.map((r) => h('li', { class: r.fritt ? 'fritt' : 'fynd' },
+        h('div', { class: 'skanning-rum' }, h('strong', null, r.namn), ' ',
+          r.fritt ? h('span', { class: 'skanning-fritt' }, 'golvet fritt ✅')
+            : h('span', { class: 'skanning-antal' }, (r.fynd || []).length + ' fynd')),
+        (r.fynd || []).map((f) => h('div', { class: 'skanning-fynd' },
+          h('div', null, (f.ikon || '❓') + ' ' + (f.namn || 'Hinder') + (f.tid ? ' · ' + klocka(f.tid) : '')),
+          f.foto ? robotFoto(f.foto, 'Robotens foto: ' + (f.namn || 'hinder')) : null,
+          aiRad(f.ai)))))) : null,
+      sk.foton ? null : utanFoto);
   }
 
   // ---------- Status ----------
@@ -497,6 +669,8 @@
   HV.robot = {
     visa,
     ladda,
+    laddaVakt,
+    get vakt() { return vakt; },
     get data() { return data; },
     get tre() { return tre; },
   };

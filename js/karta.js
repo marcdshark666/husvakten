@@ -216,24 +216,46 @@
 
     const lager = svg.querySelector('#lager-objekt');
     while (lager.firstChild) lager.removeChild(lager.firstChild);
-    const vaxtSkyltar = [];
-    for (const o of objekt) {
-      if (o.vattning) vaxtSkyltar.push(o);
+
+    // 1–2. Visningspositioner (de sparade x/y är ankare och ändras aldrig).
+    const layout = beraknaLayout(objekt);
+    const ledarLager = el('g', { class: 'objekt-ledare', 'aria-hidden': 'true' }, lager);
+    const markorLager = el('g', {}, lager);
+    const skyltLager = el('g', {}, lager);
+    const upptaget = []; // rutor (SVG-enheter) som etiketter inte får täcka
+    for (const L of layout) upptaget.push(ringRuta(L));
+    // Fasta texter i grunden (rumsnamn, "Kök", laddstationen) ska inte heller täckas av etiketter.
+    svg.querySelectorAll('.etiketter text, .mobler text, .laddstation rect').forEach((t) => {
+      try {
+        const b = t.getBBox();
+        if (b.width) upptaget.push({ x: b.x - 2, y: b.y - 1, w: b.width + 4, h: b.height + 2 });
+      } catch (e) {
+        /* ej renderad – hoppa över, markörerna skyddas ändå */
+      }
+    });
+
+    const grupper = new Map();
+    for (const L of layout) {
+      const o = L.o;
+      if (L.flyttad) {
+        el('line', { x1: r1(L.ax), y1: r1(L.ay), x2: r1(L.x), y2: r1(L.y) }, ledarLager);
+        el('circle', { cx: r1(L.ax), cy: r1(L.ay), r: 2.5 }, ledarLager);
+      }
       const g = el('g', {
-        class: 'objekt st-' + o.status + (o.id === valtId ? ' valt' : ''),
-        transform: 'translate(' + o.x + ' ' + o.y + ')',
+        class: 'objekt st-' + o.status + (o.id === valtId ? ' valt' : '') + (L.liten ? ' liten' : ''),
+        transform: 'translate(' + r1(L.x) + ' ' + r1(L.y) + ')',
         tabindex: '0',
         role: 'button',
+        'aria-label': o.namn,
         'data-id': o.id,
-      }, lager);
+      }, markorLager);
       const titel = el('title', {}, g);
       titel.textContent = o.namn;
-      el('circle', { r: 46, class: 'objekt-yta' }, g);
-      el('circle', { r: 30, class: 'objekt-puls' }, g);
-      el('circle', { r: 19, class: 'objekt-ring' }, g);
-      text(o.emoji || '📍', { y: 7, 'text-anchor': 'middle', class: 'objekt-emoji' }, g);
-      const kort = o.namn.length > 18 ? o.namn.slice(0, 17) + '…' : o.namn;
-      text(kort, { y: 36, 'text-anchor': 'middle', class: 'objekt-namn' }, g);
+      el('circle', { r: r1(L.yta), class: 'objekt-yta' }, g);
+      const skala = el('g', L.s === 1 ? {} : { transform: 'scale(' + L.s.toFixed(3) + ')' }, g);
+      el('circle', { r: L.liten ? 24 : 30, class: 'objekt-puls' }, skala);
+      el('circle', { r: 19, class: 'objekt-ring' }, skala);
+      text(o.emoji || '📍', { y: 7, 'text-anchor': 'middle', class: 'objekt-emoji' }, skala);
       const valj = (e) => {
         e.stopPropagation();
         onValj(o.id);
@@ -242,43 +264,221 @@
       g.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') valj(e);
       });
+      grupper.set(o.id, g);
     }
-    // Växtskyltarna ritas sist så att inga markörer hamnar ovanpå dem.
-    for (const o of vaxtSkyltar) {
-      const g = el('g', { transform: 'translate(' + o.x + ' ' + o.y + ')', class: 'vaxt-skylt' }, lager);
-      ritaVaxtEtikett(g, o.vattning, (VAXTART[o.id] || {}).sida, o.x);
+
+    // 3. Etiketter: växtskyltar först (de ersätter växtens namnetikett), sedan namn i
+    // prioritetsordning. Varje etikett provar under/över/höger/vänster och döljs om alla
+    // lägen krockar – namnet finns ändå i listan, i title och vid tryck.
+    for (const L of layout) {
+      if (!L.o.vattning) continue;
+      const g = el('g', { class: 'vaxt-skylt', 'data-id': L.o.id }, skyltLager);
+      if (ritaVaxtEtikett(g, L, (VAXTART[L.o.id] || {}).sida, upptaget)) L.harSkylt = true;
+      else skyltLager.removeChild(g);
+    }
+    const namnOrdning = layout
+      .filter((L) => !L.liten && !L.harSkylt)
+      .sort((a, b) => (PRIO[a.o.id] || 3) - (PRIO[b.o.id] || 3) || (RANG[b.o.status] || 0) - (RANG[a.o.status] || 0) || a.i - b.i);
+    for (const L of namnOrdning) {
+      const g = grupper.get(L.o.id);
+      const kort = L.o.namn.length > 18 ? L.o.namn.slice(0, 17) + '…' : L.o.namn;
+      const t = text(kort, { 'text-anchor': 'middle', class: 'objekt-namn' }, g);
+      const bb = matText(t, 8.6, 15);
+      const B = bb.width + 4;
+      const H = bb.height + 2;
+      const plats = valjPlats(L, B, H, 3, upptaget);
+      if (!plats) {
+        g.removeChild(t);
+        continue;
+      }
+      // Rutan (vänster/topp, absolut) → textens mittpunkt/baslinje relativt markören.
+      t.setAttribute('x', r1(plats.x - L.x + B / 2));
+      t.setAttribute('y', r1(plats.y + 1 - L.y - bb.y));
+      upptaget.push(plats);
     }
   }
 
-  /** Liten skylt vid en växt: art + nedräkning till nästa vattning, på mörk platta. */
-  function ritaVaxtEtikett(g, v, sida, ox) {
-    const hoger = sida === 'hoger';
-    const x = hoger ? 26 : 0;
-    const y1 = hoger ? -2 : sida === 'over' ? -44 : 54;
-    const anchor = hoger ? 'start' : 'middle';
+  const VB = { x0: 280, y0: 20, x1: 1010, y1: 870 };
+  const r1 = (v) => String(Math.round(v * 10) / 10);
+
+  function rumRuta(rumId) {
+    const r = RUM.find((x) => x.id === rumId);
+    if (!r) return { x0: VB.x0, y0: VB.y0, x1: VB.x1, y1: VB.y1 };
+    const p = r.punkter.split(' ').map((s) => s.split(',').map(Number));
+    const xs = p.map((q) => q[0]);
+    const ys = p.map((q) => q[1]);
+    return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), rum: r };
+  }
+
+  function ringRuta(L) {
+    const m = L.r + 2;
+    return { x: L.x - m, y: L.y - m, w: 2 * m, h: 2 * m };
+  }
+
+  function krockar(a, b) {
+    return Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) > 0 && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) > 0;
+  }
+
+  /** Ett repulsionsvarv: skjut isär par som ligger närmare än minsta avstånd. */
+  function skjutIsar(layout, marginal) {
+    let rort = false;
+    for (let a = 0; a < layout.length; a++) {
+      for (let b = a + 1; b < layout.length; b++) {
+        const A = layout[a];
+        const B = layout[b];
+        const min = A.r + B.r + marginal(A, B);
+        let dx = B.x - A.x;
+        let dy = B.y - A.y;
+        let d = Math.hypot(dx, dy);
+        if (d >= min) continue;
+        if (d < 0.01) {
+          // Exakt samma punkt: deterministisk riktning utifrån indexen.
+          const v = ((a * 7 + b * 13) % 16) * (Math.PI / 8);
+          dx = Math.cos(v);
+          dy = Math.sin(v);
+          d = 1;
+        }
+        const skjut = (min - d) / 2 + 0.1;
+        A.x -= (dx / d) * skjut;
+        A.y -= (dy / d) * skjut;
+        B.x += (dx / d) * skjut;
+        B.y += (dy / d) * skjut;
+        rort = true;
+      }
+    }
+    return rort;
+  }
+
+  /** Beräkna visningspositioner: trånga rum får mindre markörer i rutnät, sedan repulsion över alla. */
+  function beraknaLayout(objekt) {
+    const R = 19;
+    const layout = objekt.map((o, i) => ({ o, i, ax: o.x, ay: o.y, x: o.x, y: o.y, r: R, s: 1, liten: false, ruta: rumRuta(o.rum) }));
+
+    const perRum = {};
+    for (const L of layout) if (L.ruta.rum) (perRum[L.o.rum] = perRum[L.o.rum] || []).push(L);
+    for (const lista of Object.values(perRum)) {
+      const ruta = lista[0].ruta;
+      const top = ruta.y0 + (ruta.rum.liten ? 30 : 0); // plats för rumsnamnet i små rum
+      const w = ruta.x1 - ruta.x0;
+      const h = ruta.y1 - top;
+      const n = lista.length;
+      if (n * Math.pow(2 * R + 14, 2) * 2.2 <= w * h) continue; // ryms i normal storlek
+      // Krymp markörerna tills rutnätet ryms (minst r 9).
+      let r = 13;
+      let kol = 1;
+      let rader = n;
+      for (; r > 9; r--) {
+        kol = Math.max(1, Math.floor(w / (2 * r + 4)));
+        rader = Math.ceil(n / kol);
+        if (rader * (2 * r + 4) <= h) break;
+      }
+      kol = Math.max(1, Math.floor(w / (2 * r + 4)));
+      rader = Math.ceil(n / kol);
+      // Cellerna fylls i läsordning efter ankarnas läge, så att objekten hamnar ungefär rätt.
+      const sorterad = lista.slice().sort((a, b) => a.ay - b.ay || a.ax - b.ax || a.i - b.i);
+      for (let rad = 0; rad < rader; rad++) {
+        const iRad = sorterad.slice(rad * kol, rad * kol + kol).sort((a, b) => a.ax - b.ax || a.i - b.i);
+        iRad.forEach((L, c) => {
+          L.liten = true;
+          L.r = r;
+          L.s = r / R;
+          L.x = ruta.x0 + ((c + 0.5) * w) / iRad.length;
+          L.y = top + ((rad + 0.5) * h) / rader;
+        });
+      }
+    }
+
+    // Kollisionslösning: deterministisk repulsion, högst 80 varv, inom rummets ruta och kartan.
+    for (const L of layout) {
+      L.mx = L.x; // målpunkt för den svaga fjädern (ankaret, eller rutnätscellen)
+      L.my = L.y;
+    }
+    const kant = (L) => {
+      const x0 = Math.max(L.ruta.x0, VB.x0) + L.r + 2;
+      const x1 = Math.min(L.ruta.x1, VB.x1) - L.r - 2;
+      const y0 = Math.max(L.ruta.y0, VB.y0) + L.r + 2;
+      const y1 = Math.min(L.ruta.y1, VB.y1) - L.r - 2;
+      L.x = x0 > x1 ? (x0 + x1) / 2 : Math.min(x1, Math.max(x0, L.x));
+      L.y = y0 > y1 ? (y0 + y1) / 2 : Math.min(y1, Math.max(y0, L.y));
+    };
+    const luft = (A, B) => (A.liten || B.liten ? 5 : 12);
+    for (let varv = 0; varv < 80; varv++) {
+      const rort = skjutIsar(layout, luft);
+      for (const L of layout) {
+        L.x += (L.mx - L.x) * 0.03;
+        L.y += (L.my - L.y) * 0.03;
+        kant(L);
+      }
+      if (!rort && varv > 5) break;
+    }
+    // Slutpass utan fjäder så att inga markörer ligger kvar ovanpå varandra.
+    for (let varv = 0; varv < 40; varv++) {
+      const rort = skjutIsar(layout, () => 5);
+      for (const L of layout) kant(L);
+      if (!rort) break;
+    }
+
+    for (const L of layout) {
+      let narmast = Infinity;
+      for (const M of layout) if (M !== L) narmast = Math.min(narmast, Math.hypot(M.x - L.x, M.y - L.y) - M.r);
+      L.yta = Math.max(L.r * 1.25, Math.min(46 * L.s, narmast));
+      L.flyttad = Math.hypot(L.x - L.ax, L.y - L.ay) > Math.max(14, L.r);
+    }
+    return layout;
+  }
+
+  /** Första lediga läge (under/över/höger/vänster) för en ruta B×H runt markören; null = dölj. */
+  function valjPlats(L, B, H, gap, upptaget, forst) {
+    const ordning = ['under', 'over', 'hoger', 'vanster'];
+    if (forst && ordning.includes(forst)) ordning.unshift(ordning.splice(ordning.indexOf(forst), 1)[0]);
+    const m = L.r + gap;
+    for (const sida of ordning) {
+      let x = sida === 'hoger' ? L.x + m : sida === 'vanster' ? L.x - m - B : L.x - B / 2;
+      const y = sida === 'under' ? L.y + m : sida === 'over' ? L.y - m - H : L.y - H / 2;
+      if (sida === 'under' || sida === 'over') x = Math.min(VB.x1 - 4 - B, Math.max(VB.x0 + 4, x));
+      if (x < VB.x0 || x + B > VB.x1 || y < VB.y0 || y + H > VB.y1) continue;
+      const ruta = { x, y, w: B, h: H, sida };
+      if (!upptaget.some((u) => krockar(ruta, u))) return ruta;
+    }
+    return null;
+  }
+
+  /** Textens mått (getBBox), med uppskattning om kartan inte är renderad. */
+  function matText(t, perTecken, fs) {
+    let bb = null;
+    try {
+      bb = t.getBBox();
+    } catch (e) {
+      bb = null; // ej renderad (t.ex. dold flik) – uppskattning nedan
+    }
+    if (!bb || !bb.width) return { width: t.textContent.length * perTecken, height: fs * 1.25, y: -fs * 0.95 };
+    return { width: bb.width, height: bb.height, y: bb.y };
+  }
+
+  /** Liten skylt vid en växt: art + nedräkning till nästa vattning, på mörk platta.
+   *  Returnerar false om den inte får plats någonstans utan att krocka. */
+  function ritaVaxtEtikett(g, L, sida, upptaget) {
+    const v = L.o.vattning;
     const skylt = el('g', { class: 'vaxt-etikett', 'aria-hidden': 'true' }, g);
     const platta = el('rect', { rx: 6, class: 'vaxt-platta' }, skylt);
-    const t1 = text(v.art, { x, y: y1, 'text-anchor': anchor, class: 'vaxt-art' }, skylt);
-    const t2 = text(v.text, { x, y: y1 + 16, 'text-anchor': anchor, class: 'vaxt-nedrakning ' + v.klass }, skylt);
-    let bredd = 0;
-    for (const t of [t1, t2]) {
-      let b = 0;
-      try {
-        b = t.getComputedTextLength();
-      } catch (e) {
-        b = 0; // ej renderad (t.ex. dold flik) – uppskattning nedan
-      }
-      bredd = Math.max(bredd, b || t.textContent.length * 7);
-    }
+    const t1 = text(v.art, { 'text-anchor': 'start', class: 'vaxt-art' }, skylt);
+    const t2 = text(v.text, { 'text-anchor': 'start', class: 'vaxt-nedrakning ' + v.klass }, skylt);
+    const bredd = Math.max(matText(t1, 7.4, 13).width, matText(t2, 7.8, 13).width);
     const pad = 5;
-    const vanster = hoger ? x - pad : -bredd / 2 - pad;
-    // Håll skylten inom kartan (viewBox 280–1010 i x).
-    const skjut = Math.max(0, 284 - (ox + vanster)) - Math.max(0, ox + vanster + bredd + pad * 2 - 1006);
-    if (skjut) skylt.setAttribute('transform', 'translate(' + skjut + ' 0)');
-    platta.setAttribute('x', String(vanster));
-    platta.setAttribute('y', String(y1 - 13));
-    platta.setAttribute('width', String(bredd + pad * 2));
-    platta.setAttribute('height', '36');
+    const B = bredd + pad * 2;
+    const H = 36;
+    const plats = valjPlats(L, B, H, 4, upptaget, sida);
+    if (!plats) return false;
+    upptaget.push(plats);
+    platta.setAttribute('x', r1(plats.x));
+    platta.setAttribute('y', r1(plats.y));
+    platta.setAttribute('width', r1(B));
+    platta.setAttribute('height', String(H));
+    for (const [t, dy] of [[t1, 13], [t2, 29]]) {
+      t.setAttribute('x', r1(plats.x + pad));
+      t.setAttribute('y', r1(plats.y + dy));
+    }
+    return true;
   }
 
   /** Klientkoordinat → SVG-koordinat. */

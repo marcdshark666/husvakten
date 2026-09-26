@@ -250,6 +250,10 @@ dialog.blad::backdrop { background: rgba(4, 7, 12, .65); }
   .lista-kort { grid-column: 2; grid-row: 1 / span 2; }
 }
 .vaxt-skylt { pointer-events: none; }
+/* Ledarlinje från objektets sparade plats (ankare) till markören när layouten flyttat den. */
+.objekt-ledare { pointer-events: none; }
+.objekt-ledare line { stroke: rgba(230, 238, 250, .6); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.objekt-ledare circle { fill: rgba(230, 238, 250, .75); }
 .vattna.sen { color: var(--rod); font-weight: 700; }
 .vattna.idag { color: var(--gul); font-weight: 700; }
 

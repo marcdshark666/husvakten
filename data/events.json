@@ -161,6 +161,34 @@
       "notis": "Avdukat och torkat – bara flaskor, bricka, sax och en broschyr kvar",
       "uppgift": "Duka av och torka matbordet",
       "bild": "data/foton/20260926-100107-matbord.jpg"
+    },
+    {
+      "id": "e-20260926-102631-18j3",
+      "tid": "2026-09-26T10:26:31+02:00",
+      "objektId": "atervinning",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Mjölkkartonger, papperspåsar och kartonger bärs ut till återvinningen",
+      "uppgift": "Slänga kartong & papp i återvinningen",
+      "bild": "data/foton/20260926-102631-atervinning.jpg"
+    },
+    {
+      "id": "e-20260926-102738-q0pz",
+      "tid": "2026-09-26T10:27:38+02:00",
+      "objektId": "kokssopor",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Köksoporna bärs ut",
+      "uppgift": "Slänga soporna"
+    },
+    {
+      "id": "e-20260926-102738-jwqv",
+      "tid": "2026-09-26T10:27:38+02:00",
+      "objektId": "badrumssopor",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Badrumssoporna bärs ut",
+      "uppgift": "Slänga soporna"
     }
   ],
   "tilldelningar": {
@@ -276,5 +304,5 @@
       "tid": "2026-09-26T10:01:07+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T08:03:51.685Z"
+  "uppdaterad": "2026-09-26T08:27:38.605Z"
 }

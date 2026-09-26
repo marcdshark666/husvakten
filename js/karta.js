@@ -75,6 +75,8 @@
     { id: 'monstera', namn: 'Monsteran (balkongfönstret)', emoji: '🌱', rum: 'vardagsrum', x: 598, y: 232 },
     { id: 'palettblad', namn: 'Palettbladet (Coleus)', emoji: '🍁', rum: 'vardagsrum', x: 662, y: 285 },
     { id: 'diskho', namn: 'Diskhon', emoji: '🚰', rum: 'vardagsrum', x: 600, y: 668 },
+    { id: 'kokssopor', namn: 'Soptunnan i köket', emoji: '🗑️', rum: 'vardagsrum', x: 468, y: 668 },
+    { id: 'atervinning', namn: 'Återvinningen (kartong & papp)', emoji: '♻️', rum: 'vardagsrum', x: 735, y: 730 },
     { id: 'torkstallning', namn: 'Torkställningen (torr tvätt)', emoji: '👕', rum: 'badrum', x: 862, y: 762 },
   ];
 
@@ -82,7 +84,8 @@
 
   // Prioritet inför gäster: 1 = syns direkt (gör först), 2 = syns om man tittar, 3 = kan vänta.
   const PRIO = {
-    vardagsrumsvaskor: 1, diskho: 1, matbord: 1, koksbank: 1, soffa: 1, badrumssopor: 1, smutstvatt: 1,
+    vardagsrumsvaskor: 1, diskho: 1, matbord: 1, koksbank: 1, soffa: 1, badrumssopor: 1, smutstvatt: 1, kokssopor: 1,
+    atervinning: 2,
     badrumsbank: 2, torkstallning: 2, diskmaskin: 2, hallskap: 2,
     vaxter: 2, monstera: 2, palettblad: 2,
     sovrum: 3, balkong: 3, lampbord: 3, kabelhorna: 3, tvattmaskin: 3,

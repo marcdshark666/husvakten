@@ -35,7 +35,7 @@
       else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
       else e.setAttribute(k, v === true ? '' : v);
     }
-    for (const b of barn.flat()) {
+    for (const b of barn.flat(Infinity)) {
       if (b === null || b === undefined || b === false) continue;
       e.appendChild(typeof b === 'string' || typeof b === 'number' ? document.createTextNode(String(b)) : b);
     }
@@ -97,9 +97,15 @@
         h('p', { class: 'fin' }, 'Den publiceras med python verktyg/roborock/robo.py publicera.')));
       return;
     }
-    ritad = true;
-    el.replaceChildren(statusKort(), kartKort(), stadningsKort(), installningsKort(), hinderfotoKort());
-    tickaUppdaterad(el);
+    try {
+      el.replaceChildren(statusKort(), kartKort(), stadningsKort(), installningsKort() || '', hinderfotoKort() || '');
+      ritad = true;
+      tickaUppdaterad(el);
+    } catch (e) {
+      console.error('Husvakten: robotfliken kunde inte ritas', e);
+      el.replaceChildren(h('section', { class: 'kort' }, h('h2', null, '🤖 Robot'),
+        h('p', { class: 'fin' }, 'Robotfliken kunde inte visas: ' + e.message)));
+    }
   }
 
   /** Håll "Uppdaterad för X min sedan" färsk medan fliken är öppen. */

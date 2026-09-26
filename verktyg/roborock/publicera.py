@@ -438,7 +438,7 @@ def _hinderfoton(foton: dict | None, karta: dict | None) -> list[dict]:
 
 
 def innehallshash(robot_json: pathlib.Path | None = None) -> str:
-    """Hash av robot.json UTAN tidsstämplar (batteri avrundat till 20 %) – visar om något faktiskt ändrats."""
+    """Hash av robot.json UTAN tidsstämplar och WiFi-signal (batteri avrundat till 20 %) – visar om något faktiskt ändrats."""
     d = json.loads((robot_json or UT / "robot.json").read_text(encoding="utf-8"))
     d.pop("publicerad", None)
     d.pop("uppdaterad", None)
@@ -447,6 +447,8 @@ def innehallshash(robot_json: pathlib.Path | None = None) -> str:
     if isinstance(st.get("batteri"), (int, float)):
         st["batteri"] = int(st["batteri"] // 20)
     d["status"] = st
+    for g in d.get("installningar") or []:  # WiFi-signalen fladdrar mellan varje avläsning
+        g["poster"] = [p for p in g.get("poster", []) if p.get("namn") != "WiFi-signal"]
     return hashlib.sha256(json.dumps(d, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
 
 

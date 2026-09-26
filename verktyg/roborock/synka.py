@@ -137,7 +137,7 @@ def main() -> int:
         logg(f"OK ({time.time() - t0:.0f} s): {resultat}")
     except BaseException as e:  # noqa: BLE001 – SystemExit från robo/publicera ska också loggas, inte krascha schemat
         logg(f"FEL ({time.time() - t0:.0f} s): {type(e).__name__}: {e}")
-        if not isinstance(e, (SystemExit, RuntimeError)):
+        if not isinstance(e, (SystemExit, RuntimeError)) and not type(e).__module__.startswith("roborock"):
             logg(traceback.format_exc(limit=4))
     return 0
 

@@ -15,6 +15,7 @@ Hushållet = Marc och Ada. All UI på svenska, mobil först (Samsung Fold). Se `
 - `js/robot.js` – 🤖 Robot-fliken: status, förbrukningsdelar, 2D-karta med SVG-överlägg, 3D (three.js lat från jsdelivr).
 - `verktyg/roborock/robo.py` (+ `publicera.py`) – läser Roborock S7 MaxV (bara läskommandon). `robo.py publicera`
   hämtar allt, bygger ren kartbild + `robot.json` utanför repot och krypterar in i `data/valv/robot/`.
+  `synka.py` = schemalagd uppgift "Husvakten Robotsynk" (var 30:e min 07–23), pushar bara vid ändring, max 1/h.
 - `js/hushall.js` – händelselogg (delad krypterad logg + lokala), härledd status, tilldelning, statistik, rättvis fördelning.
 - `js/ml.js` – TF.js + MobileNet v2 + KNN (laddas lat från cdn.jsdelivr.net). Inga API-nycklar.
 - `js/lagring.js` – localStorage + IndexedDB, allt i try/catch.

@@ -17,6 +17,8 @@ Håller koll på om hemmet är rent. Mobil först (Samsung Fold), all text på s
 - **🤖 Robot** – Roborock S7 MaxV: batteri, läge, senaste städning, förbrukningsdelar (varning under 15 %),
   totalsummor, robotens egen karta med rum, robotfria zoner, hinder (👕 👟 🔌 …), laddstation, robotposition
   och städväg (av/på), samt en 3D-vy (three.js, laddas först när du trycker 3D; faller tillbaka om WebGL saknas).
+  Hela städhistoriken (alla poster roboten sparar, "Visa fler"), ⚙️ inställningar i klartext (schema, stör ej,
+  sug/mopp, mattläge, volym, hinderfoton, firmware, WiFi-signal), ev. hinderfoton och "Uppdaterad för X min sedan".
 - **Bildbedömning som lär sig** – TensorFlow.js + MobileNet (feature extractor) + KNN per objekt, helt i
   webbläsaren (cdn.jsdelivr.net). Märk exempel (ren/smutsig; för maskiner tom/fylld/startad/ren disk – plocka ur),
   rätta med "Fel – det var …". Säkerhet visas i procent; för få exempel → sätt status manuellt.
@@ -71,6 +73,15 @@ python verktyg/roborock/robo.py publicera --ingen-hamtning   # bygg om från red
 node verktyg/valv.js lasfil robot/robot.json         # kontroll: storlek + sha256
 git add data/valv/robot && git commit -m "Husvakten: robotdata" && git push
 ```
+**Automatisk synk:** Schemalagd uppgift **"Husvakten Robotsynk"** kör `pythonw verktyg/roborock/synka.py` var 30:e
+minut 07:00–23:00 (dolt). Den läser roboten, bygger `robot.json` och committar/pushar (`Husvakten: robotdata synkad`)
+BARA om innehållet utan tidsstämplar/WiFi-signal ändrats och senaste robotcommit är minst 60 min gammal.
+Vägrar commita annat än `.enc`. Logg: `~/.roborock/synk.log`, tillstånd: `~/.roborock/synk-state.json`.
+Fel loggas och slutkoden är alltid 0. `--tvinga` publicerar direkt. Roborock-molnet svarar `9002 request too frequency`
+om man kör för tätt – vänta några minuter.
+Hinderfoton (`robot/foton/<id>.jpg.enc`) hämtas bara när kameran tillåter det (get_camera_status bit 10) och
+kartan har foto-id; de skalas om (≤ 640 px, ingen EXIF) och krypteras in. Städkartor per städning
+(`get_clean_record_map`) går inte att läsa med biblioteket (svarar bara "ok") och hoppas över.
 Rådata ligger i `~/.roborock/data/`, byggda filer i `~/.roborock/data/publicera/` – båda utanför repot.
 I repot finns bara `data/valv/robot/karta.png.enc` och `robot.json.enc` (AAD = `robot/karta.png` resp. `robot/robot.json`).
 `node verktyg/valv.js skriv <robot/namn.png|json> <fil>` krypterar valfri sådan fil (vägrar källfiler i repot);

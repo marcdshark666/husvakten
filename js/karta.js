@@ -75,6 +75,8 @@
     { id: 'monstera', namn: 'Monsteran (balkongfönstret)', emoji: '🌱', rum: 'vardagsrum', x: 598, y: 232 },
     { id: 'palettblad', namn: 'Palettbladet (Coleus)', emoji: '🍁', rum: 'vardagsrum', x: 662, y: 285 },
     { id: 'schefflera', namn: 'Scheffleran (soffbordet)', emoji: '🌳', rum: 'vardagsrum', x: 530, y: 560 },
+    { id: 'kaktus', namn: 'Kaktusen (balkongfönstret)', emoji: '🌵', rum: 'vardagsrum', x: 560, y: 262 },
+    { id: 'clusia', namn: 'Clusian (balkongfönstret)', emoji: '🍀', rum: 'vardagsrum', x: 628, y: 300 },
     { id: 'diskho', namn: 'Diskhon', emoji: '🚰', rum: 'vardagsrum', x: 600, y: 668 },
     { id: 'kokssopor', namn: 'Soptunnan i köket', emoji: '🗑️', rum: 'vardagsrum', x: 468, y: 668 },
     { id: 'atervinning', namn: 'Återvinningen (kartong & papp)', emoji: '♻️', rum: 'vardagsrum', x: 735, y: 730 },
@@ -91,7 +93,7 @@
     vardagsrumsvaskor: 1, diskho: 1, matbord: 1, koksbank: 1, soffa: 1, badrumssopor: 1, smutstvatt: 1, kokssopor: 1,
     atervinning: 2,
     badrumsbank: 2, torkstallning: 2, spegelskap: 2, dusch: 2, torktumlare: 2, diskmaskin: 2, hallskap: 2,
-    vaxter: 2, monstera: 2, palettblad: 2, schefflera: 2,
+    vaxter: 2, monstera: 2, palettblad: 2, schefflera: 2, kaktus: 3, clusia: 2,
     sovrum: 3, balkong: 3, lampbord: 3, kabelhorna: 3, tvattmaskin: 3,
   };
 
@@ -100,13 +102,16 @@
   // Monstera ca var 7–10:e dag (när översta 3–5 cm jord är torra); vattenbubblan förlänger något.
   // Palettblad (Coleus) är törstigt: jämnt fuktig jord, ca var 3:e dag vid elementet.
   // Schefflera: när översta 2–3 cm jord är torra, ca var 7:e dag – tål torka bättre än övervattning.
-  const VATTNA = { vaxter: 7, monstera: 7, palettblad: 3, schefflera: 7 };
+  // Kaktus: helt torrt mellan gångerna, var 3:e–4:e vecka höst/vinter. Clusia: när översta 2–3 cm är torra.
+  const VATTNA = { vaxter: 7, monstera: 7, palettblad: 3, schefflera: 7, kaktus: 21, clusia: 7 };
 
   // Vattningskulor (~245 ml full). Hur mycket kulan ska fyllas vid varje påfyllning + kort råd.
   const KULA = {
     vaxter: { mangd: '½ kula (~120 ml) per orkidé', rad: 'Orkidéer i bark vill torka upp mellan gångerna – ½ kula räcker ca en vecka. Aloen: ingen kula, 100 ml var 2–3:e vecka.' },
     monstera: { mangd: '1 hel kula (~245 ml)', rad: 'Räcker ca 5–7 dagar vid elementet. Fyll när översta 3–5 cm jord är torra; gula blad = minska till ¾ kula.' },
     palettblad: { mangd: '1 hel kula (~245 ml)', rad: 'Törstig – kulan töms på 2–3 dagar. Hänger bladen: fyll direkt. Nyp blomaxen.' },
+    kaktus: { mangd: 'ingen kula – ca 100 ml direkt i jorden', rad: 'Låt jorden torka helt. Höst/vinter var 3:e–4:e vecka, vår/sommar varannan vecka. Hellre för lite än för mycket.' },
+    clusia: { mangd: '½ kula (~120 ml)', rad: 'Tjocka blad lagrar vatten – tål torka. Räcker ca en vecka; gula/mjuka blad = för blött.' },
     schefflera: { mangd: '¾ kula (~180 ml)', rad: 'Räcker ca en vecka. Tappar den blad eller gulnar = för blött, gå ner till ½ kula. Vänd krukan ibland mot ljuset.' },
   };
 
@@ -116,6 +121,8 @@
     monstera: { art: 'Monstera deliciosa', kort: 'Monstera deliciosa', sida: 'over' },
     palettblad: { art: 'Palettblad (Coleus scutellarioides)', kort: 'Palettblad (Coleus)', sida: 'hoger' },
     schefflera: { art: 'Schefflera arboricola (paraplyaralia)', kort: 'Schefflera', sida: 'under' },
+    kaktus: { art: 'Pelarkaktus (troligen Cleistocactus)', kort: 'Pelarkaktus', sida: 'over' },
+    clusia: { art: 'Clusia rosea (Princess)', kort: 'Clusia', sida: 'under' },
   };
 
   function el(namn, attr, forälder) {

@@ -42,6 +42,24 @@
       "bild": "data/foton/20260919-120000-schefflera.jpg"
     },
     {
+      "id": "e-20260919-120000-17cu",
+      "tid": "2026-09-19T12:00:00+02:00",
+      "objektId": "kaktus",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Pelarkaktus (troligen Cleistocactus). Vattnad lör 19/9 (antaget). Ingen kula – ~100 ml var 3:e–4:e vecka höst/vinter, nä",
+      "uppgift": "Vattna växterna"
+    },
+    {
+      "id": "e-20260919-120000-865s",
+      "tid": "2026-09-19T12:00:00+02:00",
+      "objektId": "clusia",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Clusia rosea 'Princess'. Vattnad lör 19/9 (antaget). ½ vattenkula (~120 ml) ca var 7:e dag. (Bild ej sparad – polaroidfo",
+      "uppgift": "Vattna växterna"
+    },
+    {
       "id": "e-20260926-085151-7lms",
       "tid": "2026-09-26T08:51:51+02:00",
       "objektId": "tvattmaskin",
@@ -523,5 +541,5 @@
       "tid": "2026-09-26T12:27:29+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T10:34:47.493Z"
+  "uppdaterad": "2026-09-26T10:36:47.969Z"
 }

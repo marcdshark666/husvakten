@@ -68,6 +68,9 @@
     { id: 'koksbank', namn: 'Köksbänken', emoji: '🧽', rum: 'vardagsrum', x: 506, y: 630 },
     { id: 'badrumsbank', namn: 'Badrumsbänken (Adas saker)', emoji: '🧴', rum: 'badrum', x: 818, y: 822 },
     { id: 'hallskap', namn: 'Hallskåpet (Adas väskor)', emoji: '👜', rum: 'vardagsrum', x: 783, y: 700 },
+    { id: 'badrumssopor', namn: 'Soptunnan i badrummet', emoji: '🗑️', rum: 'badrum', x: 862, y: 830 },
+    { id: 'smutstvatt', namn: 'Smutstvätten (korgen)', emoji: '🧦', rum: 'badrum', x: 815, y: 762 },
+    { id: 'torkstallning', namn: 'Torkställningen (torr tvätt)', emoji: '👕', rum: 'badrum', x: 862, y: 762 },
   ];
 
   const RANG = { smutsig: 3, pagar: 2, ren: 1 };

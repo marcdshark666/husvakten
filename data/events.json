@@ -61,6 +61,36 @@
       "notis": "Väskor och tyg på skåpet i slutet av korridoren vid badrummet – Ada tar hand om det",
       "uppgift": "Plocka undan väskorna",
       "bild": "data/foton/20260926-092639-hallskap.jpg"
+    },
+    {
+      "id": "e-20260926-092711-mxyw",
+      "tid": "2026-09-26T09:27:11+02:00",
+      "objektId": "badrumssopor",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Soptunnan vid toaletten är överfull, skräp på golvet",
+      "uppgift": "Töm soptunnan i badrummet",
+      "bild": "data/foton/20260926-092711-badrumssopor.jpg"
+    },
+    {
+      "id": "e-20260926-092723-8f4z",
+      "tid": "2026-09-26T09:27:23+02:00",
+      "objektId": "smutstvatt",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Tvättkorgen full + hög på golvet framför toaletten – Marc och Ada",
+      "uppgift": "Tvätta smutstvätten",
+      "bild": "data/foton/20260926-092723-smutstvatt.jpg"
+    },
+    {
+      "id": "e-20260926-092739-bg7p",
+      "tid": "2026-09-26T09:27:39+02:00",
+      "objektId": "torkstallning",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Torr tvätt på ställningen ska in i hyllorna – Marc och Ada tar sina egna plagg",
+      "uppgift": "Plocka in torr tvätt",
+      "bild": "data/foton/20260926-092739-torkstallning.jpg"
     }
   ],
   "tilldelningar": {
@@ -71,6 +101,10 @@
     "hallskap": {
       "person": "Ada",
       "tid": "2026-09-26T07:27:11.148Z"
+    },
+    "badrumssopor": {
+      "person": "Marc",
+      "tid": "2026-09-26T07:28:16.047Z"
     }
   },
   "objekt": [],
@@ -109,7 +143,28 @@
       "etikett": "smutsig",
       "bild": "data/foton/20260926-092639-hallskap.jpg",
       "tid": "2026-09-26T09:26:39+02:00"
+    },
+    {
+      "id": "t-20260926-092711-mxyw",
+      "objektId": "badrumssopor",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-092711-badrumssopor.jpg",
+      "tid": "2026-09-26T09:27:11+02:00"
+    },
+    {
+      "id": "t-20260926-092723-8f4z",
+      "objektId": "smutstvatt",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-092723-smutstvatt.jpg",
+      "tid": "2026-09-26T09:27:23+02:00"
+    },
+    {
+      "id": "t-20260926-092739-bg7p",
+      "objektId": "torkstallning",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-092739-torkstallning.jpg",
+      "tid": "2026-09-26T09:27:39+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T07:27:11.148Z"
+  "uppdaterad": "2026-09-26T07:28:16.556Z"
 }

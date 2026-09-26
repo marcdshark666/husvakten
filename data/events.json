@@ -249,6 +249,36 @@
       "notis": "Disken är klar och ren – Marc plockar ur. Riskokarkärlet och locket på bänken diskas för hand",
       "uppgift": "Plocka ur disken",
       "bild": "data/foton/20260926-114815-diskmaskin.jpg"
+    },
+    {
+      "id": "e-20260926-114827-3yjt",
+      "tid": "2026-09-26T11:48:27+02:00",
+      "objektId": "diskho",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Fortfarande full: matlådor, termos, mugg, glas och ugnsform – in i diskmaskinen när den är urplockad",
+      "uppgift": "Töm silarna och diska ur hon",
+      "bild": "data/foton/20260926-114827-diskho.jpg"
+    },
+    {
+      "id": "e-20260926-114834-l34r",
+      "tid": "2026-09-26T11:48:34+02:00",
+      "objektId": "koksbank",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Vid vattenkokaren: riskokarkärl, lock och glas väntar på diskmaskinen",
+      "uppgift": "Diska och torka köksbänken",
+      "bild": "data/foton/20260926-114834-koksbank.jpg"
+    },
+    {
+      "id": "e-20260926-114841-g56b",
+      "tid": "2026-09-26T11:48:41+02:00",
+      "objektId": "koksbank",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Vid spisen: ugnsplåt, kaffekanna och två koppar – in i diskmaskinen när den är tömd, torka spishällen",
+      "uppgift": "Diska och torka köksbänken",
+      "bild": "data/foton/20260926-114841-koksbank.jpg"
     }
   ],
   "tilldelningar": {
@@ -393,7 +423,28 @@
       "etikett": "renfull",
       "bild": "data/foton/20260926-114815-diskmaskin.jpg",
       "tid": "2026-09-26T11:48:15+02:00"
+    },
+    {
+      "id": "t-20260926-114827-3yjt",
+      "objektId": "diskho",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-114827-diskho.jpg",
+      "tid": "2026-09-26T11:48:27+02:00"
+    },
+    {
+      "id": "t-20260926-114834-l34r",
+      "objektId": "koksbank",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-114834-koksbank.jpg",
+      "tid": "2026-09-26T11:48:34+02:00"
+    },
+    {
+      "id": "t-20260926-114841-g56b",
+      "objektId": "koksbank",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-114841-koksbank.jpg",
+      "tid": "2026-09-26T11:48:41+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T09:48:40.221Z"
+  "uppdaterad": "2026-09-26T09:49:37.036Z"
 }

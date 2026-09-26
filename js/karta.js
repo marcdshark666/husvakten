@@ -70,10 +70,18 @@
     { id: 'hallskap', namn: 'Hallskåpet (Adas väskor)', emoji: '👜', rum: 'vardagsrum', x: 783, y: 700 },
     { id: 'badrumssopor', namn: 'Soptunnan i badrummet', emoji: '🗑️', rum: 'badrum', x: 862, y: 830 },
     { id: 'smutstvatt', namn: 'Smutstvätten (korgen)', emoji: '🧦', rum: 'badrum', x: 815, y: 762 },
+    { id: 'vardagsrumsvaskor', namn: 'Väskorna i vardagsrummet', emoji: '🧳', rum: 'vardagsrum', x: 560, y: 560 },
     { id: 'torkstallning', namn: 'Torkställningen (torr tvätt)', emoji: '👕', rum: 'badrum', x: 862, y: 762 },
   ];
 
   const RANG = { smutsig: 3, pagar: 2, ren: 1 };
+
+  // Prioritet inför gäster: 1 = syns direkt (gör först), 2 = syns om man tittar, 3 = kan vänta.
+  const PRIO = {
+    vardagsrumsvaskor: 1, matbord: 1, koksbank: 1, soffa: 1, badrumssopor: 1, smutstvatt: 1,
+    badrumsbank: 2, torkstallning: 2, diskmaskin: 2, hallskap: 2,
+    sovrum: 3, balkong: 3, lampbord: 3, kabelhorna: 3, tvattmaskin: 3,
+  };
 
   function el(namn, attr, forälder) {
     const e = document.createElementNS(NS, namn);
@@ -219,5 +227,5 @@
     return null;
   }
 
-  HV.karta = { RUM, ZONER, STANDARDOBJEKT, byggGrund, rita, tillSvg, rumVid };
+  HV.karta = { RUM, ZONER, STANDARDOBJEKT, PRIO, byggGrund, rita, tillSvg, rumVid };
 })();

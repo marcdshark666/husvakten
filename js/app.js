@@ -261,12 +261,16 @@
 
   function ritaLista(vy) {
     const lista = $('#lista');
-    const sorterade = vy.slice().sort((a, b) => RANG[a.status] - RANG[b.status] || a.namn.localeCompare(b.namn, 'sv'));
+    const prio = (o) => karta.PRIO[o.id] || 3;
+    // Ej rena först (P1 → P3), därefter rena
+    const sorterade = vy.slice().sort((a, b) =>
+      (a.status === 'ren') - (b.status === 'ren') || prio(a) - prio(b) || RANG[a.status] - RANG[b.status] || a.namn.localeCompare(b.namn, 'sv'));
     lista.replaceChildren(
       ...sorterade.map((o) =>
         h('li', null,
           h('button', { class: 'rad st-' + o.status, onclick: () => oppnaBlad(o.id) },
             h('span', { class: 'rad-emoji' }, o.emoji),
+            h('span', { class: 'prio prio-' + prio(o), title: 'Prioritet inför gäster' }, 'P' + prio(o)),
             h('span', { class: 'rad-namn' }, o.namn,
               o.tilldelad ? h('span', { class: 'tilldelad' }, ' → ' + o.tilldelad) : null
             ),

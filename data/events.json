@@ -91,6 +91,16 @@
       "notis": "Torr tvätt på ställningen ska in i hyllorna – Marc och Ada tar sina egna plagg",
       "uppgift": "Plocka in torr tvätt",
       "bild": "data/foton/20260926-092739-torkstallning.jpg"
+    },
+    {
+      "id": "e-20260926-092759-vp78",
+      "tid": "2026-09-26T09:27:59+02:00",
+      "objektId": "vardagsrumsvaskor",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "PRIO 1: öppna resväskor, påsar och kläder på golvet och bordet – packa upp eller stäng och ställ i förrådet",
+      "uppgift": "Packa upp och ställ undan väskorna",
+      "bild": "data/foton/20260926-092759-vardagsrumsvaskor.jpg"
     }
   ],
   "tilldelningar": {
@@ -164,7 +174,14 @@
       "etikett": "smutsig",
       "bild": "data/foton/20260926-092739-torkstallning.jpg",
       "tid": "2026-09-26T09:27:39+02:00"
+    },
+    {
+      "id": "t-20260926-092759-vp78",
+      "objektId": "vardagsrumsvaskor",
+      "etikett": "smutsig",
+      "bild": "data/foton/20260926-092759-vardagsrumsvaskor.jpg",
+      "tid": "2026-09-26T09:27:59+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T07:28:16.556Z"
+  "uppdaterad": "2026-09-26T07:29:46.836Z"
 }

@@ -209,6 +209,36 @@
       "notis": "Höger sida: skor på hyllan och golvet, skokartonger staplade",
       "uppgift": "Städa hallen och ställa in skorna",
       "bild": "data/foton/20260926-103525-hallen-hoger.jpg"
+    },
+    {
+      "id": "e-20260926-112738-xist",
+      "tid": "2026-09-26T11:27:38+02:00",
+      "objektId": "torktumlare",
+      "status": "pagar",
+      "person": "Ada",
+      "timerMin": 58,
+      "timerSlut": "2026-09-26T12:25:38+02:00",
+      "notis": "Soffans fluffiga överdrag torkas – läggs på soffan mot fläckar när det är klart",
+      "uppgift": "Tvätta soffans överdrag",
+      "bild": "data/foton/20260926-112738-torktumlare.jpg"
+    },
+    {
+      "id": "e-20260926-113046-81tw",
+      "tid": "2026-09-26T11:30:46+02:00",
+      "objektId": "spegelskap",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Hyllorna i skåpet sorterade, speglarna putsade in- och utvändigt, handfatet rent (bilder ej sparade – medicin/person syn",
+      "uppgift": "Städa spegelskåpet och putsa speglarna"
+    },
+    {
+      "id": "e-20260926-113046-j9ze",
+      "tid": "2026-09-26T11:30:46+02:00",
+      "objektId": "dusch",
+      "status": "ren",
+      "person": "Ada",
+      "notis": "Duschen städad av Ada (bild ej sparad – spegling av person)",
+      "uppgift": "Städa duschen"
     }
   ],
   "tilldelningar": {
@@ -339,7 +369,14 @@
       "etikett": "ren",
       "bild": "data/foton/20260926-100107-matbord.jpg",
       "tid": "2026-09-26T10:01:07+02:00"
+    },
+    {
+      "id": "t-20260926-112738-xist",
+      "objektId": "torktumlare",
+      "etikett": "startad",
+      "bild": "data/foton/20260926-112738-torktumlare.jpg",
+      "tid": "2026-09-26T11:27:38+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T08:35:25.337Z"
+  "uppdaterad": "2026-09-26T09:30:47.090Z"
 }

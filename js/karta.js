@@ -78,6 +78,9 @@
     { id: 'kokssopor', namn: 'Soptunnan i köket', emoji: '🗑️', rum: 'vardagsrum', x: 468, y: 668 },
     { id: 'atervinning', namn: 'Återvinningen (kartong & papp)', emoji: '♻️', rum: 'vardagsrum', x: 735, y: 730 },
     { id: 'torkstallning', namn: 'Torkställningen (torr tvätt)', emoji: '👕', rum: 'badrum', x: 862, y: 762 },
+    { id: 'spegelskap', namn: 'Spegelskåpet & handfatet', emoji: '🪞', rum: 'badrum', x: 839, y: 730 },
+    { id: 'dusch', namn: 'Duschen', emoji: '🚿', rum: 'badrum', x: 868, y: 800 },
+    { id: 'torktumlare', namn: 'Torktumlaren', emoji: '🌀', rum: 'badrum', x: 812, y: 798, typ: 'disk', timerMin: 60, efterTimer: 'paminn' },
   ];
 
   const RANG = { smutsig: 3, pagar: 2, ren: 1 };
@@ -86,7 +89,7 @@
   const PRIO = {
     vardagsrumsvaskor: 1, diskho: 1, matbord: 1, koksbank: 1, soffa: 1, badrumssopor: 1, smutstvatt: 1, kokssopor: 1,
     atervinning: 2,
-    badrumsbank: 2, torkstallning: 2, diskmaskin: 2, hallskap: 2,
+    badrumsbank: 2, torkstallning: 2, spegelskap: 2, dusch: 2, torktumlare: 2, diskmaskin: 2, hallskap: 2,
     vaxter: 2, monstera: 2, palettblad: 2,
     sovrum: 3, balkong: 3, lampbord: 3, kabelhorna: 3, tvattmaskin: 3,
   };

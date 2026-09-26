@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Husvakten – lägg till en händelse i den delade loggen data/events.json.
+/* Husvakten – lägg till en händelse i den delade loggen (krypterad: data/valv/events.json.enc).
  *
  * Används av Hushållsvakthunden (Vakthund 10) och för hand:
  *   node verktyg/logga.js --objekt tvattmaskin --status pagar --person Marc \
@@ -13,16 +13,17 @@
  * --uppgift: uppgiftstyp som räknas som egen rad i statistiken.
  * --lar-in:  lägg även bilden som delad träningsbild med denna etikett
  *            (ren | smutsig | tom | fylld | startad | renfull). Webbläsaren räknar fram embeddingen.
+ * Valvet: loggen och bilderna skrivs KRYPTERADE via verktyg/valv.js (lösenord i ~/.husvakten/losen.txt,
+ *         aldrig i repot). Ingen okrypterad bild eller logg hamnar i data/.
  * Pushar INTE – det gör den som anropar (git add data && git commit && git push).
  */
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const valv = require('./valv');
 
 const ROT = path.resolve(__dirname, '..');
-const EVENTS = path.join(ROT, 'data', 'events.json');
-const FOTON = path.join(ROT, 'data', 'foton');
 const PERSONER = ['Marc', 'Ada'];
 const ETIKETTER = ['ren', 'smutsig', 'tom', 'fylld', 'startad', 'renfull'];
 const STATUSALIAS = {
@@ -119,14 +120,14 @@ function isoStockholm(ms) {
   return d.toISOString().slice(0, 19) + tecken + p(oh) + ':' + p(om);
 }
 
+/** Skala + strippa bilden i minnet. Returnerar { buf, bredd, hojd, bytes } – skrivs sedan krypterad. */
 async function behandlaBild(sharp, fil, mal) {
-  await sharp(fil)
+  const buf = await sharp(fil)
     .rotate() // använd EXIF-orienteringen innan metadata kastas
     .resize({ width: 1280, height: 1280, fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: 75, mozjpeg: true })
-    .toFile(mal); // sharp skriver ingen metadata om inte withMetadata() anges
-  const meta = await sharp(mal).metadata();
-  const buf = fs.readFileSync(mal);
+    .toBuffer(); // sharp skriver ingen metadata om inte withMetadata() anges
+  const meta = await sharp(buf).metadata();
   const rester = [];
   if (meta.exif) rester.push('EXIF');
   if (meta.xmp) rester.push('XMP');
@@ -135,10 +136,9 @@ async function behandlaBild(sharp, fil, mal) {
   if (buf.includes(Buffer.from('Exif\0\0'))) rester.push('Exif-segment');
   if (buf.includes(Buffer.from('GPS'))) rester.push('GPS-sträng');
   if (rester.length) {
-    fs.unlinkSync(mal);
-    fel('metadata fanns kvar i ' + mal + ' (' + rester.join(', ') + ') – bilden togs bort, inget loggades');
+    fel('metadata fanns kvar i ' + mal + ' (' + rester.join(', ') + ') – inget loggades');
   }
-  return { bredd: meta.width, hojd: meta.height, bytes: buf.length };
+  return { buf, bredd: meta.width, hojd: meta.height, bytes: buf.length };
 }
 
 async function main() {
@@ -151,13 +151,15 @@ async function main() {
   const person = PERSONER.find((p) => p.toLowerCase() === String(a.person).toLowerCase());
   if (!person) fel('okänd person "' + a.person + '" (' + PERSONER.join(' | ') + ')');
 
+  let nyckel;
   let data = { version: 1, handelser: [], tilldelningar: {}, objekt: [] };
-  if (fs.existsSync(EVENTS)) {
-    try {
-      data = JSON.parse(fs.readFileSync(EVENTS, 'utf8'));
-    } catch (e) {
-      fel('data/events.json är trasig: ' + e.message);
-    }
+  try {
+    nyckel = valv.oppna().nyckel;
+    const las = valv.lasEvents(nyckel);
+    if (las) data = las;
+    else if (!a.dryRun) fel('data/valv/events.json.enc saknas – vägrar börja om med en tom logg');
+  } catch (e) {
+    fel('valvet: ' + e.message);
   }
   data.handelser = Array.isArray(data.handelser) ? data.handelser : [];
   data.tilldelningar = data.tilldelningar && typeof data.tilldelningar === 'object' ? data.tilldelningar : {};
@@ -219,14 +221,9 @@ async function main() {
 
   let bildInfo = null;
   if (a.bild) {
+    // Logisk sökväg data/foton/<namn> – filen ligger krypterad i data/valv/foton/<namn>.enc
     const namn = stamp(tid) + '-' + objekt.id + '.jpg';
-    const mal = path.join(FOTON, namn);
-    if (a.dryRun) {
-      bildInfo = { dryRun: true };
-    } else {
-      fs.mkdirSync(FOTON, { recursive: true });
-      bildInfo = await behandlaBild(sharp, a.bild, mal);
-    }
+    bildInfo = await behandlaBild(sharp, a.bild, namn);
     handelse.bild = 'data/foton/' + namn;
   }
 
@@ -245,14 +242,14 @@ async function main() {
   data.handelser.push(handelse);
   data.handelser.sort((x, y) => Date.parse(x.tid) - Date.parse(y.tid));
 
+  const bildUt = bildInfo ? { bredd: bildInfo.bredd, hojd: bildInfo.hojd, bytes: bildInfo.bytes } : null;
   if (a.dryRun) {
-    console.log(JSON.stringify({ dryRun: true, handelse, tidKalla }, null, 2));
+    console.log(JSON.stringify({ dryRun: true, handelse, tidKalla, bild: bildUt, handelserTotalt: data.handelser.length }, null, 2));
     return;
   }
-  const tmp = EVENTS + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n');
-  fs.renameSync(tmp, EVENTS);
-  console.log(JSON.stringify({ ok: true, handelse, tidKalla, bild: bildInfo }, null, 2));
+  if (bildInfo) valv.skrivFoto(nyckel, handelse.bild.slice('data/foton/'.length), bildInfo.buf);
+  valv.skrivEvents(nyckel, data);
+  console.log(JSON.stringify({ ok: true, handelse, tidKalla, bild: bildUt, krypterad: true }, null, 2));
 }
 
 main().catch((e) => fel(e.stack || e.message));

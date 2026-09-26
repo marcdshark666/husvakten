@@ -252,3 +252,15 @@ dialog.blad::backdrop { background: rgba(4, 7, 12, .65); }
 .vaxt-skylt { pointer-events: none; }
 .vattna.sen { color: var(--rod); font-weight: 700; }
 .vattna.idag { color: var(--gul); font-weight: 700; }
+
+/* ---------- Inloggning (valvet) ---------- */
+body.last > :not(#inloggning):not(script) { display: none !important; }
+.inloggning { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.inloggning-kort { width: 100%; max-width: 380px; background: var(--yta); border: 1px solid var(--kant); border-radius: var(--radie); padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; }
+.inloggning-kort h1 { font-size: 1.5rem; }
+.inloggning-kort p { margin: 0; }
+.inloggning-kort label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: .95rem; }
+.inloggning-kort input { min-height: 48px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--kant); background: var(--yta2); color: var(--text); font: inherit; font-size: 16px; }
+.inloggning-kort input:focus { outline: 2px solid var(--primar); outline-offset: 1px; }
+.inloggning-fel { color: var(--rod); font-weight: 600; }
+.inloggning-kort .liten-text { font-size: .8rem; }

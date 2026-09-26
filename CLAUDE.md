@@ -10,13 +10,18 @@ Hushållet = Marc och Ada. All UI på svenska, mobil först (Samsung Fold). Se `
 ## Arkitektur – rör rätt fil
 - `js/karta.js` – planritningen (egen SVG), rum, robotfria zoner, `STANDARDOBJEKT`.
   `verktyg/logga.js` läser `STANDARDOBJEKT` härifrån – nytt standardobjekt = en rad här.
-- `js/hushall.js` – händelselogg (delad `data/events.json` + lokala), härledd status, tilldelning, statistik, rättvis fördelning.
+- `js/valv.js` – inloggningen + WebCrypto-dekryptering av `data/valv/`; laddar karta/ml/hushall/app efter upplåsning.
+- `verktyg/valv.js` – samma valvformat i Node (kryptera/dekryptera, `las`, `foto`, `migrera`).
+- `js/hushall.js` – händelselogg (delad krypterad logg + lokala), härledd status, tilldelning, statistik, rättvis fördelning.
 - `js/ml.js` – TF.js + MobileNet v2 + KNN (laddas lat från cdn.jsdelivr.net). Inga API-nycklar.
 - `js/lagring.js` – localStorage + IndexedDB, allt i try/catch.
 - `js/app.js` – UI: lista, objektblad, bildbedömning, timer, flikar, export/import. `HV_APP` på window för test.
-- `verktyg/logga.js` – lägger till händelser i `data/events.json`, skalar och strippar bilder (sharp).
+- `verktyg/logga.js` – lägger till händelser i valvet, skalar och strippar bilder (sharp) och skriver dem krypterade.
 
 ## Regler
+- **Valvet:** all delad data ligger krypterad i `data/valv/` (AES-256-GCM, PBKDF2-SHA256 600k, se README).
+  Lösenordet finns BARA i `~/.husvakten/losen.txt` – skriv det aldrig i repot, commits, loggar eller rapporter.
+  Lägg aldrig tillbaka okrypterad `data/events.json` eller `data/foton/`. Läs loggen med `node verktyg/valv.js las`.
 - **Repot är publikt.** Inga skärmbilder av bostaden, inga originalfoton. Foton går ENDAST via
   `verktyg/logga.js` (max 1280 px, q75, all metadata bort, kontrolleras efteråt). Lägg aldrig in en bild för hand.
 - Status härleds ur senaste händelsen; en utgången timer ger objektets `efterTimer` (ren/påminn).

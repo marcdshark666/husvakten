@@ -19,15 +19,28 @@ Håller koll på om hemmet är rent. Mobil först (Samsung Fold), all text på s
   rätta med "Fel – det var …". Säkerhet visas i procent; för få exempel → sätt status manuellt.
 - **Timer** som överlever omladdning (sluttiden sparas). När den går ut blir maskinen REN eller så kommer en påminnelse.
 
+## Inloggning och valvet 🔒
+Hela sajten kräver inloggning (e-post + lösenord) vid varje besök. Repot är publikt, så den delade datan
+ligger **krypterad** i `data/valv/` – utan rätt uppgifter går den inte att läsa, varken på sajten eller i repot.
+- Nyckel: PBKDF2-SHA256 (600 000 iterationer, salt i `data/valv/meta.json`) av `epost (gemener) + "
+" + lösenord`.
+- Filer: AES-256-GCM, `[0x01][IV 12 byte][chiffertext + tagg]`, AAD = logiskt filnamn.
+- Webbläsaren (`js/valv.js`, WebCrypto) dekrypterar i minnet; lösenordet sparas aldrig (inte i localStorage/sessionStorage).
+  Appens skript laddas först efter upplåsning.
+- Node (`verktyg/valv.js`) läser lösenord/e-post ur `~/.husvakten/losen.txt` och `epost.txt` – **utanför repot**.
+  `node verktyg/valv.js las` skriver ut loggen; `node verktyg/valv.js foto <namn> <utfil>` dekrypterar en bild (utanför repot).
+- Gamla okrypterade `data/events.json` och `data/foton/` togs bort 2026-09-26 men finns kvar i git-historiken.
+
 ## Data
 | Var | Vad |
 |-----|-----|
-| `data/events.json` (repo, publikt) | Delad händelselogg, tilldelningar, delade träningsbilder. Läses vid varje laddning. |
-| `data/foton/` (repo, publikt) | Nedskalade JPEG (max 1280 px, q75) **utan EXIF/GPS**. |
+| `data/valv/events.json.enc` (repo, krypterad) | Delad händelselogg, tilldelningar, delade träningsbilder. Dekrypteras vid varje laddning. |
+| `data/valv/foton/<namn>.jpg.enc` (repo, krypterad) | Nedskalade JPEG (max 1280 px, q75) **utan EXIF/GPS**. I loggen heter de `data/foton/<namn>.jpg`. |
+| `data/valv/meta.json` (repo, publik) | Salt, iterationer, format – inga hemligheter. |
 | localStorage | Objekt, lokala händelser, tilldelningar, vald person. |
 | IndexedDB | Träningsexempel (embeddings + miniatyrer) och lokala foton. |
 
-Lokala händelser syns bara på telefonen där de gjordes tills de loggas i `data/events.json`.
+Lokala händelser syns bara på telefonen där de gjordes tills de loggas i den delade (krypterade) loggen.
 **Meny → Exportera** sparar allt lokalt som JSON; **Importera** läser tillbaka det.
 
 ## Logga en händelse (vakthunden / för hand)
@@ -39,7 +52,8 @@ node verktyg/logga.js --objekt diskmaskin --status ren --person Marc \
   --uppgift "Plocka ur disken" --lar-in renfull --bild foto.jpg
 git add data && git commit -m "Husvakten: ny händelse" && git push
 ```
+Loggen och bilden skrivs krypterat i `data/valv/` (kräver `~/.husvakten/losen.txt`). `--dry-run` skriver inget.
 Tid = `--tid` → bildens EXIF-tid (Europe/Stockholm) → nu. Skriptet vägrar om metadata finns kvar i bilden.
 
 ## Köra lokalt
-Statisk sajt, inget byggsteg: `npx serve .` och öppna http://localhost:3000.
+Statisk sajt, inget byggsteg: `npx serve .` och öppna http://localhost:3000 (WebCrypto kräver localhost/https).

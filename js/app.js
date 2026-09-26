@@ -318,7 +318,7 @@
     );
     const r = hushall.repo();
     $('#synk').textContent = r.laddad ? '☁️ delad logg' : r.fel ? '⚠️ bara lokalt' : '';
-    $('#synk').title = r.laddad ? 'data/events.json inläst (' + r.handelser.length + ' händelser)' : r.fel || '';
+    $('#synk').title = r.laddad ? 'Delad logg inläst ur valvet (' + r.handelser.length + ' händelser)' : r.fel || '';
   }
 
   /** "💧 Vattna lör 3 okt" / "💧 Dags att vattna" (+ senast vattnad i objektbladet). */
@@ -668,7 +668,7 @@
     }
   }
 
-  /** Delade träningsbilder från data/events.json → embeddings i IndexedDB (en gång per bild). */
+  /** Delade träningsbilder från den krypterade loggen (data/valv/) → embeddings i IndexedDB (en gång per bild). */
   async function synkaDeladTraning(objektId, onStatus) {
     const seeds = hushall.repo().traning.filter((x) => !objektId || x.objektId === objektId);
     if (!seeds.length) return 0;
@@ -678,9 +678,7 @@
       if (finns.has(s.id)) continue;
       try {
         onStatus && onStatus('Läser in delad träningsbild …');
-        const svar = await fetch(s.bild);
-        if (!svar.ok) throw new Error('HTTP ' + svar.status);
-        const blob = await svar.blob();
+        const blob = await HV.valv.hamtaBlob(s.bild);
         const bild = await ml.filTillBild(new File([blob], 'seed.jpg', { type: 'image/jpeg' }));
         const { canvas, thumb } = ml.forbered(bild.img);
         URL.revokeObjectURL(bild.url);
@@ -973,7 +971,7 @@
   async function bildUrl(x) {
     if (!x.bild) return null;
     if (x.bild.startsWith('idb:')) return lagring.lasFoto(x.bild.slice(4));
-    return x.bild;
+    return HV.valv.bildUrl(x.bild); // krypterad i data/valv/ → object-URL
   }
 
   async function ritaGalleri() {
@@ -984,9 +982,10 @@
       return;
     }
     const kort = [];
-    for (const x of med) {
+    const urls = await Promise.all(med.map(bildUrl)); // dekrypteras parallellt
+    for (const [i, x] of med.entries()) {
       const o = hitta(x.objektId);
-      const url = await bildUrl(x);
+      const url = urls[i];
       if (!url) continue;
       kort.push(
         h('button', { class: 'galleri-kort', onclick: () => visaBild(x, url, o) },

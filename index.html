@@ -9,7 +9,23 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%A0%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="last">
+  <!-- Inloggning: all delad data ligger krypterad (data/valv/). Appen laddas först när valvet är upplåst. -->
+  <div id="inloggning" class="inloggning">
+    <form id="inloggning-form" class="inloggning-kort" autocomplete="on" novalidate>
+      <h1>🏠 Husvakten</h1>
+      <p class="fin">Logga in för att se hemmet.</p>
+      <label>E-post
+        <input id="inloggning-epost" type="email" name="email" inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+      </label>
+      <label>Lösenord
+        <input id="inloggning-losen" type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <p id="inloggning-fel" class="inloggning-fel" role="alert" hidden></p>
+      <button id="inloggning-knapp" type="submit" class="knapp primar bred">Logga in</button>
+      <p class="fin liten-text">Lösenordet sparas inte – du får frågan vid varje besök.</p>
+    </form>
+  </div>
   <header class="topp">
     <div class="topp-rad">
       <h1>🏠 Husvakten</h1>
@@ -177,9 +193,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="js/lagring.js"></script>
-  <script src="js/karta.js"></script>
-  <script src="js/ml.js"></script>
-  <script src="js/hushall.js"></script>
-  <script src="js/app.js"></script>
+  <!-- valv.js visar inloggningen och laddar karta.js, ml.js, hushall.js och app.js efter upplåsning -->
+  <script src="js/valv.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* Husvakten – hushållet: händelselogg (delad data/events.json + lokala händelser),
+/* Husvakten – hushållet: händelselogg (delad krypterad logg i data/valv/ + lokala händelser),
  * status härledd ur loggen, tilldelningar, statistik och rättvis fördelning.
  */
 (function () {
@@ -55,9 +55,8 @@
   // ---------- Delad logg ----------
   async function laddaRepo() {
     try {
-      const svar = await fetch('data/events.json?t=' + Date.now(), { cache: 'no-store' });
-      if (!svar.ok) throw new Error('HTTP ' + svar.status);
-      const data = await svar.json();
+      // Delad logg ligger krypterad i data/valv/ – dekrypteras i minnet (js/valv.js)
+      const data = await HV.valv.lasEvents();
       const handelser = (Array.isArray(data.handelser) ? data.handelser : [])
         .map((h) => stadaHandelse(h, 'delad'))
         .filter(Boolean);
@@ -81,7 +80,7 @@
         fel: null,
       };
     } catch (e) {
-      console.warn('Husvakten: kunde inte läsa data/events.json', e);
+      console.warn('Husvakten: kunde inte läsa den delade loggen (valvet)', e);
       repo.fel = e.message;
     }
     return repo;

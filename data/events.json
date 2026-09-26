@@ -289,6 +289,34 @@
       "notis": "Urplockad och tom – Marc fyller på med disken från hon och bänken",
       "uppgift": "Plocka ur disken",
       "bild": "data/foton/20260926-121927-diskmaskin.jpg"
+    },
+    {
+      "id": "e-20260926-122729-0rff",
+      "tid": "2026-09-26T12:27:29+02:00",
+      "objektId": "diskmaskin",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Fylld med disken från hon och bänken – ugnsplåten och riskokarkärlet tas i nästa omgång",
+      "uppgift": "Starta diskmaskinen",
+      "bild": "data/foton/20260926-122729-diskmaskin.jpg"
+    },
+    {
+      "id": "e-20260926-122809-7t87",
+      "tid": "2026-09-26T12:28:09+02:00",
+      "objektId": "diskho",
+      "status": "ren",
+      "person": "Marc",
+      "notis": "Hon tömd – bara ugnsplåten ligger i blöt på diskbänken",
+      "uppgift": "Töm silarna och diska ur hon"
+    },
+    {
+      "id": "e-20260926-122809-fn0y",
+      "tid": "2026-09-26T12:28:09+02:00",
+      "objektId": "koksbank",
+      "status": "smutsig",
+      "person": "Marc",
+      "notis": "Kvar: ugnsplåten och riskokarkärlet + lock – i diskmaskinen efter nästa omgång",
+      "uppgift": "Diska och torka köksbänken"
     }
   ],
   "tilldelningar": {
@@ -305,16 +333,20 @@
       "tid": "2026-09-26T07:28:16.047Z"
     },
     "diskmaskin": {
-      "person": null,
-      "tid": "2026-09-26T10:19:46.763Z"
+      "person": "Marc",
+      "tid": "2026-09-26T10:28:09.331Z"
     },
     "diskho": {
-      "person": "Marc",
-      "tid": "2026-09-26T07:31:55.128Z"
+      "person": null,
+      "tid": "2026-09-26T10:28:09.515Z"
     },
     "matbord": {
       "person": null,
       "tid": "2026-09-26T08:01:40.325Z"
+    },
+    "koksbank": {
+      "person": "Marc",
+      "tid": "2026-09-26T10:28:09.605Z"
     }
   },
   "objekt": [
@@ -461,7 +493,14 @@
       "etikett": "tom",
       "bild": "data/foton/20260926-121927-diskmaskin.jpg",
       "tid": "2026-09-26T12:19:27+02:00"
+    },
+    {
+      "id": "t-20260926-122729-0rff",
+      "objektId": "diskmaskin",
+      "etikett": "fylld",
+      "bild": "data/foton/20260926-122729-diskmaskin.jpg",
+      "tid": "2026-09-26T12:27:29+02:00"
     }
   ],
-  "uppdaterad": "2026-09-26T10:19:46.763Z"
+  "uppdaterad": "2026-09-26T10:28:09.605Z"
 }

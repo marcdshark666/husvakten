@@ -52,6 +52,7 @@
       uppgift: h.uppgift ? String(h.uppgift).slice(0, 60) : '',
       auto: !!h.auto,
       ersatter: h.ersatter ? String(h.ersatter).slice(0, 60) : null,
+      vakt: h.vakt && typeof h.vakt === 'object' ? h.vakt : null, // vaktrundans AI-klassning (patrull.py)
       kalla,
     };
   }

@@ -4,7 +4,7 @@
  * Används av Hushållsvakthunden (Vakthund 10) och för hand:
  *   node verktyg/logga.js --objekt tvattmaskin --status pagar --person Marc \
  *        [--bild foto.jpg] [--timer 43] [--tid 2026-09-26T08:51:51+02:00] [--notis "30° Mörk tvätt"] \
- *        [--uppgift "Plocka ur disken"] [--lar-in renfull] [--tilldela Ada] [--dry-run]
+ *        [--uppgift "Plocka ur disken"] [--lar-in renfull] [--tilldela Ada] [--vakt vakt.json] [--dry-run]
  *
  * --person: Marc | Ada | Robot (Robot = golvvakten; räknas inte i statistik/rättvis fördelning).
  *
@@ -12,6 +12,9 @@
  * --tid:    utelämnad → bildens EXIF-tid (tolkas som Europe/Stockholm) → annars nu.
  * --bild:   skalas till max 1280 px lång sida, JPEG kvalitet 75, ALL metadata (EXIF/GPS/XMP/ICC) tas bort.
  *           Resultatet kontrolleras efteråt – skriptet vägrar om metadata finns kvar.
+ * --vakt:   JSON-fil från verktyg/roborock/patrull.py (vaktrundans AI-klassning av ett robotfoto) → handelse.vakt.
+ *           Bara kända fält sparas (runda, etikett, typ, rum, robotEtikett, objekt, kategori, atgard, sakerhet,
+ *           overens, sammanfattning, minuter, dockad, besok).
  * --uppgift: uppgiftstyp som räknas som egen rad i statistiken.
  * --lar-in:  lägg även bilden som delad träningsbild med denna etikett
  *            (ren | smutsig | tom | fylld | startad | renfull). Webbläsaren räknar fram embeddingen.
@@ -144,6 +147,44 @@ async function behandlaBild(sharp, fil, mal) {
   return { buf, bredd: meta.width, hojd: meta.height, bytes: buf.length };
 }
 
+/** Vaktrundans metadata (patrull.py) – bara kända fält, korta strängar. */
+function lasVakt(fil) {
+  let d;
+  try {
+    d = JSON.parse(fs.readFileSync(fil, 'utf8'));
+  } catch (e) {
+    fel('--vakt: kunde inte läsa ' + fil + ': ' + e.message);
+  }
+  const str = (v, n) => (v === undefined || v === null ? undefined : String(v).slice(0, n));
+  const KAT = ['plocka_upp', 'smutsigt', 'rent', 'annat'];
+  const ut = {
+    runda: str(d.runda, 40),
+    etikett: str(d.etikett, 80),
+    typ: ['foto', 'rum', 'karta'].includes(d.typ) ? d.typ : 'foto',
+    rum: str(d.rum, 40),
+    robotEtikett: str(d.robotEtikett, 60),
+    objekt: str(d.objekt, 80),
+    kategori: KAT.includes(d.kategori) ? d.kategori : undefined,
+    atgard: str(d.atgard, 100),
+    sakerhet: Number.isFinite(Number(d.sakerhet)) ? Math.max(0, Math.min(1, Number(d.sakerhet))) : undefined,
+    overens: typeof d.overens === 'boolean' ? d.overens : undefined,
+    minuter: Number.isFinite(Number(d.minuter)) ? Number(d.minuter) : undefined,
+    dockad: typeof d.dockad === 'boolean' ? d.dockad : undefined,
+  };
+  if (d.sammanfattning && typeof d.sammanfattning === 'object') {
+    ut.sammanfattning = {};
+    for (const [rum, s] of Object.entries(d.sammanfattning).slice(0, 12)) {
+      ut.sammanfattning[String(rum).slice(0, 40)] = {
+        plocka_upp: Number(s.plocka_upp) || 0, smutsigt: Number(s.smutsigt) || 0,
+        foton: Number(s.foton) || 0, besokt: !!s.besokt,
+      };
+    }
+  }
+  if (Array.isArray(d.besok)) ut.besok = d.besok.slice(0, 20).map((b) => ({ rum: str(b.rum, 40), resultat: str(b.resultat, 40) }));
+  for (const k of Object.keys(ut)) if (ut[k] === undefined) delete ut[k];
+  return ut;
+}
+
 async function main() {
   const a = lasArgs(process.argv.slice(2));
   if (!a.objekt || !a.status || !a.person) {
@@ -219,6 +260,7 @@ async function main() {
   }
   if (a.notis) handelse.notis = String(a.notis).slice(0, 120);
   if (a.uppgift) handelse.uppgift = String(a.uppgift).slice(0, 60);
+  if (a.vakt) handelse.vakt = lasVakt(a.vakt);
   if (a['lar-in'] && !ETIKETTER.includes(a['lar-in'])) fel('okänd --lar-in: ' + a['lar-in'] + ' (' + ETIKETTER.join(' | ') + ')');
   if (a['lar-in'] && !a.bild) fel('--lar-in kräver --bild');
 

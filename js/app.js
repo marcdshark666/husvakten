@@ -983,11 +983,17 @@
       return;
     }
     const kort = [];
+    const topp = vaktSammanfattning(med);
+    if (topp) kort.push(topp);
     const urls = await Promise.all(med.map(bildUrl)); // dekrypteras parallellt
     for (const [i, x] of med.entries()) {
       const o = hitta(x.objektId);
       const url = urls[i];
       if (!url) continue;
+      if (x.vakt) {
+        kort.push(vaktKort(x, url, o));
+        continue;
+      }
       kort.push(
         h('button', { class: 'galleri-kort', onclick: () => visaBild(x, url, o) },
           h('img', { src: url, alt: (o ? o.namn : x.objektId) + ' ' + formatDatum(x.t), loading: 'lazy' }),
@@ -1000,6 +1006,46 @@
       );
     }
     if (flik === 'galleri') ruta.replaceChildren(...kort);
+  }
+
+  // Vaktrundan (verktyg/roborock/patrull.py): AI-klassade robotfoton
+  const VAKTKAT = { plocka_upp: 'Plocka upp', smutsigt: 'Smutsigt', rent: 'Rent', annat: 'Annat' };
+
+  function vaktSammanfattning(med) {
+    const senast = med.find((x) => x.vakt && x.vakt.sammanfattning);
+    if (!senast) return null;
+    const v = senast.vakt;
+    const rader = Object.entries(v.sammanfattning).filter(([, s]) => s.besokt || s.foton);
+    const upp = rader.reduce((n, [, s]) => n + s.plocka_upp, 0);
+    const smuts = rader.reduce((n, [, s]) => n + s.smutsigt, 0);
+    return h('section', { class: 'vakt-topp' },
+      h('strong', null, '🤖 ' + (v.etikett || 'Vaktrunda')),
+      h('p', null, h('span', { class: 'vakt-chip kat-plocka_upp' }, upp + ' att plocka upp'), ' ',
+        h('span', { class: 'vakt-chip kat-smutsigt' }, smuts + ' smutsiga ställen')),
+      h('ul', { class: 'vakt-rum' }, rader.map(([rum, s]) => h('li', null,
+        h('strong', null, rum), ': ' + s.plocka_upp + ' plocka upp, ' + s.smutsigt + ' smutsigt · ' + s.foton + ' foton' +
+        (s.besokt ? '' : ' · ej nått')))),
+      h('p', { class: 'fin' }, (v.minuter != null ? v.minuter + ' min · ' : '') +
+        (v.dockad === false ? 'roboten kom INTE tillbaka till dockan' : 'åter i dockan') + ' · ingen städning')
+    );
+  }
+
+  function vaktKort(x, url, o) {
+    const v = x.vakt;
+    const kat = v.kategori || (v.typ === 'foto' ? 'annat' : null);
+    return h('button', { class: 'galleri-kort vakt-kort', onclick: () => visaBild(x, url, o) },
+      h('img', { src: url, alt: (v.typ === 'karta' ? 'Robotens väg ' : 'Robotfoto ') + (v.rum || '') + ' ' + formatDatum(x.t), loading: 'lazy' }),
+      h('span', { class: 'galleri-text' },
+        kat ? h('span', { class: 'vakt-chip kat-' + kat }, VAKTKAT[kat] || kat)
+          : h('span', { class: 'badge st-' + x.status }, STATUSTEXT[x.status]),
+        h('span', null, (v.typ === 'karta' ? '🗺️ Robotens väg' : '📷 ' + (v.rum || 'okänt rum'))),
+        v.objekt ? h('span', null, 'AI: ' + v.objekt + (v.sakerhet != null ? ' (' + Math.round(v.sakerhet * 100) + ' %)' : '')) : null,
+        v.robotEtikett ? h('span', { class: 'fin' }, 'Roboten: ' + v.robotEtikett +
+          (v.overens === true ? ' · ✓ stämmer' : v.overens === false ? ' · ✗ stämmer inte' : '')) : null,
+        v.atgard ? h('span', { class: 'vakt-atgard' }, '→ ' + v.atgard) : null,
+        h('span', { class: 'fin' }, (v.etikett || 'Vaktrunda') + ' · ' + formatDatum(x.t))
+      )
+    );
   }
 
   function visaBild(x, url, o) {

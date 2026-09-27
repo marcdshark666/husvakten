@@ -217,6 +217,14 @@ dialog.blad::backdrop { background: rgba(4, 7, 12, .65); }
 .galleri-kort img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
 .galleri-text { display: grid; gap: 2px; padding: 6px 8px; font-size: .85rem; }
 .galleri-text .badge { justify-self: start; }
+.vakt-topp { grid-column: 1 / -1; display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--kant); border-radius: 10px; background: var(--yta2); }
+.vakt-topp p, .vakt-rum { margin: 0; }
+.vakt-rum { padding-left: 18px; font-size: .9rem; }
+.vakt-chip { justify-self: start; display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .78rem; font-weight: 600; color: #fff; background: #6b7280; }
+.vakt-chip.kat-plocka_upp { background: #c62828; }
+.vakt-chip.kat-smutsigt { background: #e67e22; }
+.vakt-chip.kat-rent { background: #2e7d32; }
+.vakt-atgard { font-weight: 600; }
 .visare-bild { width: 100%; max-height: 65vh; object-fit: contain; border-radius: 10px; background: #000; }
 .prio { display: inline-block; font-size: .7rem; font-weight: 800; padding: 1px 6px; border-radius: 6px; margin-right: 0; flex: none; }
 .prio-1 { background: var(--rod); color: #fff; }

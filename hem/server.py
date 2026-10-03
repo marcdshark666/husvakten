@@ -364,7 +364,7 @@ class Hanterare(BaseHTTPRequestHandler):
     sys_version = ""
 
     def log_message(self, fmt, *args):
-        forsta = args[0] if args else ""
+        forsta = str(args[0]) if args else ""  # send_error skickar en HTTPStatus, inte en sträng
         if "/api/status" in forsta or "/api/halsa" in forsta:
             return
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))

@@ -81,7 +81,39 @@
       </div>
       <ul id="lista" class="lista"></ul>
     </section>
-  </main>
+  
+      <div class="kort">
+        <h2>💻 Datorstyrning (Tale Scale)</h2>
+        <div class="knappar">
+          <button onclick="HV.api.atgard('dator_app', {app: 'claude'})">🖥️ Claude Code</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'codex'})">🖥️ Codex</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'antigravity'})">🖥️ Antigravity</button>
+        </div>
+        <div class="knappar" style="margin-top:10px;">
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows'})">🪟 Win</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows_tab'})">🪟 Win+Tab</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'upp'})">⬆️ Upp</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'ner'})">⬇️ Ner</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'vanster'})">⬅️ Vänster</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'hoger'})">➡️ Höger</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'enter'})">↵ Enter</button>
+        </div>
+        <div style="margin-top:10px;">
+          <input type="text" id="dator-meddelande" placeholder="Meddelande till datorn..." style="padding:10px; width:70%; border-radius:10px; border:1px solid #ccc;" onkeypress="if(event.key==='Enter') skickaMeddelande()"/>
+          <button onclick="skickaMeddelande()" style="padding:10px; border-radius:10px; border:none; background:#eee; cursor:pointer;">Skicka</button>
+        </div>
+        <script>
+          function skickaMeddelande() {
+            const f = document.getElementById('dator-meddelande');
+            if (f.value.trim()) {
+              HV.api.atgard('dator_meddelande', {meddelande: f.value.trim()});
+              f.value = '';
+            }
+          }
+        </script>
+      </div>
+
+    </main>
 
   <main class="vy" data-vy="statistik" hidden>
     <section class="kort">
@@ -95,7 +127,39 @@
       </div>
       <div id="statistik"></div>
     </section>
-  </main>
+  
+      <div class="kort">
+        <h2>💻 Datorstyrning (Tale Scale)</h2>
+        <div class="knappar">
+          <button onclick="HV.api.atgard('dator_app', {app: 'claude'})">🖥️ Claude Code</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'codex'})">🖥️ Codex</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'antigravity'})">🖥️ Antigravity</button>
+        </div>
+        <div class="knappar" style="margin-top:10px;">
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows'})">🪟 Win</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows_tab'})">🪟 Win+Tab</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'upp'})">⬆️ Upp</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'ner'})">⬇️ Ner</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'vanster'})">⬅️ Vänster</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'hoger'})">➡️ Höger</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'enter'})">↵ Enter</button>
+        </div>
+        <div style="margin-top:10px;">
+          <input type="text" id="dator-meddelande" placeholder="Meddelande till datorn..." style="padding:10px; width:70%; border-radius:10px; border:1px solid #ccc;" onkeypress="if(event.key==='Enter') skickaMeddelande()"/>
+          <button onclick="skickaMeddelande()" style="padding:10px; border-radius:10px; border:none; background:#eee; cursor:pointer;">Skicka</button>
+        </div>
+        <script>
+          function skickaMeddelande() {
+            const f = document.getElementById('dator-meddelande');
+            if (f.value.trim()) {
+              HV.api.atgard('dator_meddelande', {meddelande: f.value.trim()});
+              f.value = '';
+            }
+          }
+        </script>
+      </div>
+
+    </main>
 
   <main class="vy" data-vy="galleri" hidden>
     <section class="kort">
@@ -103,12 +167,108 @@
       <p class="fin">Varje bild som registrerats med en händelse – senast först.</p>
       <div id="galleri" class="galleri"></div>
     </section>
-  </main>
+  
+      <div class="kort">
+        <h2>💻 Datorstyrning (Tale Scale)</h2>
+        <div class="knappar">
+          <button onclick="HV.api.atgard('dator_app', {app: 'claude'})">🖥️ Claude Code</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'codex'})">🖥️ Codex</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'antigravity'})">🖥️ Antigravity</button>
+        </div>
+        <div class="knappar" style="margin-top:10px;">
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows'})">🪟 Win</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows_tab'})">🪟 Win+Tab</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'upp'})">⬆️ Upp</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'ner'})">⬇️ Ner</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'vanster'})">⬅️ Vänster</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'hoger'})">➡️ Höger</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'enter'})">↵ Enter</button>
+        </div>
+        <div style="margin-top:10px;">
+          <input type="text" id="dator-meddelande" placeholder="Meddelande till datorn..." style="padding:10px; width:70%; border-radius:10px; border:1px solid #ccc;" onkeypress="if(event.key==='Enter') skickaMeddelande()"/>
+          <button onclick="skickaMeddelande()" style="padding:10px; border-radius:10px; border:none; background:#eee; cursor:pointer;">Skicka</button>
+        </div>
+        <script>
+          function skickaMeddelande() {
+            const f = document.getElementById('dator-meddelande');
+            if (f.value.trim()) {
+              HV.api.atgard('dator_meddelande', {meddelande: f.value.trim()});
+              f.value = '';
+            }
+          }
+        </script>
+      </div>
 
-  <main class="vy robot-vy" id="robot-vy" data-vy="robot" hidden></main>
+    </main>
+
+  <main class="vy robot-vy" id="robot-vy" data-vy="robot" hidden>
+      <div class="kort">
+        <h2>💻 Datorstyrning (Tale Scale)</h2>
+        <div class="knappar">
+          <button onclick="HV.api.atgard('dator_app', {app: 'claude'})">🖥️ Claude Code</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'codex'})">🖥️ Codex</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'antigravity'})">🖥️ Antigravity</button>
+        </div>
+        <div class="knappar" style="margin-top:10px;">
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows'})">🪟 Win</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows_tab'})">🪟 Win+Tab</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'upp'})">⬆️ Upp</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'ner'})">⬇️ Ner</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'vanster'})">⬅️ Vänster</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'hoger'})">➡️ Höger</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'enter'})">↵ Enter</button>
+        </div>
+        <div style="margin-top:10px;">
+          <input type="text" id="dator-meddelande" placeholder="Meddelande till datorn..." style="padding:10px; width:70%; border-radius:10px; border:1px solid #ccc;" onkeypress="if(event.key==='Enter') skickaMeddelande()"/>
+          <button onclick="skickaMeddelande()" style="padding:10px; border-radius:10px; border:none; background:#eee; cursor:pointer;">Skicka</button>
+        </div>
+        <script>
+          function skickaMeddelande() {
+            const f = document.getElementById('dator-meddelande');
+            if (f.value.trim()) {
+              HV.api.atgard('dator_meddelande', {meddelande: f.value.trim()});
+              f.value = '';
+            }
+          }
+        </script>
+      </div>
+
+    </main>
 
   <!-- 🎛 Styr: lampor, projektor och robot via hemservern (hem/server.py, bara Tailscale). Ritas av js/hem.js. -->
-  <main class="vy" id="styr-vy" data-vy="styr" hidden></main>
+  <main class="vy" id="styr-vy" data-vy="styr" hidden>
+      <div class="kort">
+        <h2>💻 Datorstyrning (Tale Scale)</h2>
+        <div class="knappar">
+          <button onclick="HV.api.atgard('dator_app', {app: 'claude'})">🖥️ Claude Code</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'codex'})">🖥️ Codex</button>
+          <button onclick="HV.api.atgard('dator_app', {app: 'antigravity'})">🖥️ Antigravity</button>
+        </div>
+        <div class="knappar" style="margin-top:10px;">
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows'})">🪟 Win</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'windows_tab'})">🪟 Win+Tab</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'upp'})">⬆️ Upp</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'ner'})">⬇️ Ner</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'vanster'})">⬅️ Vänster</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'hoger'})">➡️ Höger</button>
+          <button onclick="HV.api.atgard('dator_tangent', {knapp: 'enter'})">↵ Enter</button>
+        </div>
+        <div style="margin-top:10px;">
+          <input type="text" id="dator-meddelande" placeholder="Meddelande till datorn..." style="padding:10px; width:70%; border-radius:10px; border:1px solid #ccc;" onkeypress="if(event.key==='Enter') skickaMeddelande()"/>
+          <button onclick="skickaMeddelande()" style="padding:10px; border-radius:10px; border:none; background:#eee; cursor:pointer;">Skicka</button>
+        </div>
+        <script>
+          function skickaMeddelande() {
+            const f = document.getElementById('dator-meddelande');
+            if (f.value.trim()) {
+              HV.api.atgard('dator_meddelande', {meddelande: f.value.trim()});
+              f.value = '';
+            }
+          }
+        </script>
+      </div>
+
+    </main>
 
   <!-- Bildvisare -->
   <dialog id="visare" class="blad">

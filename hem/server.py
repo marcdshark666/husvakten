@@ -42,6 +42,28 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
+try:
+    import fonster
+except ImportError:
+    try:
+        from hem import fonster
+    except ImportError:
+        fonster = None
+
+import subprocess
+
+TANGENT_KNAPPAR = {
+    "windows": ("win",),
+    "windows_tab": ("win", "tab"),
+    "vanster": ("left",),
+    "hoger": ("right",),
+    "upp": ("up",),
+    "ner": ("down",),
+    "enter": ("enter",),
+}
+
+
+
 HAR = os.path.dirname(os.path.abspath(__file__))
 ROT = os.path.dirname(HAR)  # husvakten/ (repot)
 DATA = os.path.join(HAR, "data")  # gitignorerad
@@ -281,6 +303,34 @@ def atgard(namn: str, data: dict, konfig: dict) -> dict:
             raise RuntimeError(str(e))
         text = {"start": "städning startad", "paus": "pausad", "stopp": "stoppad", "docka": "på väg till dockan", "rum": f"städar rum {rum}"}[kmd]
         return {"ok": True, "text": "🤖 " + text, "svar": res.get("svar")}
+    
+    if namn == "dator_tangent":
+        knapp = str(data.get("knapp") or "")
+        if knapp not in TANGENT_KNAPPAR:
+            raise ValueError("okand tangent")
+        if fonster:
+            fonster.tryck(*TANGENT_KNAPPAR[knapp])
+        return {"ok": True, "text": f"Skickade tangent: {knapp}"}
+    if namn == "dator_app":
+        app = str(data.get("app") or "")
+        kmd = {
+            "claude": r'start cmd /k "C:\Users\PC\.local\bin\claude.exe"',
+            "codex": r'start cmd /k "codex exec"',
+            "antigravity": r'start cmd /k "C:\Users\PC\.gemini\antigravity\bin\agentapi.bat"'
+        }.get(app)
+        if not kmd:
+            raise ValueError("okand app")
+        subprocess.Popen(kmd, shell=True)
+        return {"ok": True, "text": f"Startade app: {app}"}
+    if namn == "dator_meddelande":
+        text = str(data.get("meddelande") or "").strip()
+        if not text:
+            raise ValueError("tomt meddelande")
+        meddelandelogg = os.path.join(DATA, "meddelanden.log")
+        with open(meddelandelogg, "a", encoding="utf-8") as fh:
+            fh.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} {text}\n")
+        return {"ok": True, "text": f"Mottog meddelande: {text}"}
+
     if namn == "enhet":
         enhet = _enhet(konfig, data.get("id"))
         kommando = str(data.get("kommando") or "")

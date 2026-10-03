@@ -407,7 +407,11 @@ class Hanterare(BaseHTTPRequestHandler):
         if origin and origin.lower() in (GITHUB_ORIGIN, self._eget_origin()):
             return [("Access-Control-Allow-Origin", origin), ("Vary", "Origin"),
                     ("Access-Control-Allow-Headers", "Authorization, Content-Type"),
-                    ("Access-Control-Allow-Methods", "GET, POST, OPTIONS"), ("Access-Control-Max-Age", "600")]
+                    ("Access-Control-Allow-Methods", "GET, POST, OPTIONS"), ("Access-Control-Max-Age", "600"),
+                    # Chrome Private Network Access: GitHub-sidan (publik) anropar en tailnet-adress (privat).
+                    # Nyare Chrome (Local Network Access) kräver dessutom att användaren godkänner i en ruta;
+                    # iPad-Safari frågar inte. Enklast: öppna https://<dator>.ts.net/hem/ direkt (samma origin).
+                    ("Access-Control-Allow-Private-Network", "true")]
         return []
 
     def _token(self) -> str | None:

@@ -315,7 +315,9 @@
 
   function rita() {
     if (!el) return;
-    el.replaceChildren(anslutningsKort(), ...(status ? [robotKort(), ...enhetsKort(), infoKort()] : [bas && !behoverInlogg ? infoKort() : null]));
+    // replaceChildren() skriver ut null som texten "null" – filtrera bort tomma kort.
+    const kort = status ? [robotKort(), ...enhetsKort(), infoKort()] : [bas && !behoverInlogg ? infoKort() : null];
+    el.replaceChildren(anslutningsKort(), ...kort.filter(Boolean));
   }
 
   // ---------- Livscykel ----------

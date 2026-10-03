@@ -11,7 +11,7 @@
   const BAS = 'data/valv/';
   const FOTO_RE = /^data\/foton\/([\w.-]+\.jpe?g)$/i;
   const GENERISK_RE = /^(robot\/(foton\/)?[\w-]+\.(png|json|jpg)|hem\/[\w-]+\.json)$/; // samma som verktyg/valv.js
-  const VERSION = '20261001'; // cache-brytare för appskripten (höj tillsammans med ?v= i index.html)
+  const VERSION = '20261003'; // cache-brytare för appskripten (höj tillsammans med ?v= i index.html)
   const APPSKRIPT = ['js/karta.js', 'js/ml.js', 'js/hushall.js', 'js/robot.js', 'js/hem.js', 'js/app.js'];
 
   let nyckel = null;

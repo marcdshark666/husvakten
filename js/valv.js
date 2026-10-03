@@ -10,8 +10,9 @@
   const HV = (window.HV = window.HV || {});
   const BAS = 'data/valv/';
   const FOTO_RE = /^data\/foton\/([\w.-]+\.jpe?g)$/i;
-  const GENERISK_RE = /^robot\/(foton\/)?[\w-]+\.(png|json|jpg)$/; // samma som verktyg/valv.js
-  const APPSKRIPT = ['js/karta.js', 'js/ml.js', 'js/hushall.js', 'js/robot.js', 'js/app.js'];
+  const GENERISK_RE = /^(robot\/(foton\/)?[\w-]+\.(png|json|jpg)|hem\/[\w-]+\.json)$/; // samma som verktyg/valv.js
+  const VERSION = '20261001'; // cache-brytare för appskripten (höj tillsammans med ?v= i index.html)
+  const APPSKRIPT = ['js/karta.js', 'js/ml.js', 'js/hushall.js', 'js/robot.js', 'js/hem.js', 'js/app.js'];
 
   let nyckel = null;
   const bildCache = new Map(); // logisk sökväg → Promise<objectURL>
@@ -146,7 +147,9 @@
         losenF.value = '';
         document.getElementById('inloggning').remove();
         document.body.classList.remove('last');
-        for (const src of APPSKRIPT) await laddaSkript(src);
+        for (const src of APPSKRIPT) await laddaSkript(src + '?v=' + VERSION);
+        // Hemservern (🎛 Styr) använder samma uppgifter – ett tyst försök, inget sparas här.
+        if (HV.hem && typeof HV.hem.forsokLoggaIn === 'function') HV.hem.forsokLoggaIn(epost, losen);
       } catch (e) {
         losenF.value = '';
         felRuta.textContent = e.message === 'fel-uppgifter'

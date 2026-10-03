@@ -299,6 +299,7 @@
     if (flik === 'statistik') ritaStatistik();
     if (flik === 'galleri') ritaGalleri();
     if (flik === 'robot' && HV.robot) HV.robot.visa($('#robot-vy'));
+    if (flik === 'styr' && HV.hem) HV.hem.visa($('#styr-vy'));
   }
 
   function ritaOversikt(vy) {

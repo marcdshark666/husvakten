@@ -9,3 +9,5 @@ karta*.json
 karta*.bin
 karta*.raw
 robot.json
+# Hemservern (hem/server.py): sessioner, revisionslogg, vaktloggar – aldrig i repot
+hem/data/

@@ -380,3 +380,32 @@ body.last > :not(#inloggning):not(script) { display: none !important; }
 .skanning-fritt { color: var(--gron); font-weight: 600; }
 .skanning-antal { color: var(--gul); font-weight: 600; }
 .skanning-fynd { margin-top: 8px; }
+
+/* ---------- 🎛 Styr-fliken (iPad: stora tryckytor, hemservern via Tailscale) ---------- */
+.styr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+.styr-knapp { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 104px; padding: 12px 8px; border-radius: 16px; border: 1px solid var(--kant); background: var(--yta2); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; text-align: center; transition: transform .08s, background .2s, border-color .2s; }
+.styr-knapp:active { transform: scale(.97); }
+.styr-knapp:disabled { opacity: .45; cursor: default; }
+.styr-knapp.pa { border-color: var(--gron); background: rgba(61, 220, 132, .12); }
+.styr-knapp.bekrafta { border-color: var(--gul); background: rgba(255, 197, 61, .18); color: var(--gul); }
+.styr-knapp.jobbar, .styr-liten.jobbar { opacity: .6; }
+.styr-ikon { font-size: 2rem; line-height: 1; }
+.styr-text { font-size: 1rem; }
+.styr-under { font-size: .78rem; font-weight: 500; color: var(--dampad); }
+.styr-enhet { display: grid; gap: 8px; padding: 12px; border-radius: 16px; border: 1px solid var(--kant); background: var(--yta2); }
+.styr-enhet.pa { border-color: var(--gron); }
+.styr-enhet-huvud { display: flex; align-items: center; gap: 10px; }
+.styr-enhet-huvud .styr-ikon { font-size: 1.7rem; }
+.styr-enhet-knappar { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.styr-liten { min-height: 52px; font-size: 1rem; }
+.styr-liten.aktiv { border-color: var(--primar); background: rgba(79, 140, 255, .18); }
+.styr-rum { display: flex; flex-wrap: wrap; gap: 8px; }
+.styr-rumknapp { min-height: 48px; }
+.styr-rumknapp.vald { border-color: var(--primar); background: rgba(79, 140, 255, .18); }
+.styr-form { display: grid; gap: 6px; margin-top: 6px; max-width: 420px; }
+.styr-form .knapp { margin-top: 8px; }
+.styr-varning { color: var(--gul); font-weight: 600; }
+@media (min-width: 900px) {
+  .styr-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .styr-knapp { min-height: 120px; }
+}

@@ -43,8 +43,9 @@ const ITERATIONER_STANDARD = 2000000;
 const FORMAT_VERSION = 1;
 const NAMN_RE = /^[\w.-]+\.jpe?g$/i;
 // Generiska valvfiler (robotfliken m.m.): <katalog>/<namn>.<ändelse>, bara kända kataloger.
-const GENERISKA_KATALOGER = ['robot'];
-const GENERISK_RE = /^robot\/(foton\/)?[\w-]+\.(png|json|jpg)$/;
+const GENERISKA_KATALOGER = ['robot', 'hem'];
+// hem/konfig.json = hemserverns adress (🎛 Styr-fliken) – krypterad så inte ens tailnet-namnet ligger i klartext.
+const GENERISK_RE = /^(robot\/(foton\/)?[\w-]+\.(png|json|jpg)|hem\/[\w-]+\.json)$/;
 
 function lasLosenFil(losenFil) {
   if (!fs.existsSync(losenFil)) throw new Error('saknar ' + losenFil);
@@ -160,7 +161,7 @@ function lasFoto(nyckel, namn) {
 
 /** Sökväg till en generisk valvfil, t.ex. "robot/karta.png" → data/valv/robot/karta.png.enc */
 function generiskFil(namn) {
-  if (!GENERISK_RE.test(namn)) throw new Error('ogiltigt logiskt namn: ' + namn + ' (tillåtet: robot/<namn>.png|json, robot/foton/<id>.jpg)');
+  if (!GENERISK_RE.test(namn)) throw new Error('ogiltigt logiskt namn: ' + namn + ' (tillåtet: robot/<namn>.png|json, robot/foton/<id>.jpg, hem/<namn>.json)');
   return path.join(VALV, ...namn.split('/')) + '.enc';
 }
 

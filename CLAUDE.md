@@ -20,6 +20,12 @@ Hushållet = Marc och Ada. All UI på svenska, mobil först (Samsung Fold). Se `
   var 90:e s, skriver tidslinjen `robot/logg.json` (krypterad; klartext bara i `~/.roborock/vaktlogg.json`), hämtar
   hinderfoton + AI-bedömning (`claude -p --model haiku`, aldrig API), golvvakten loggar "Golvet – <rum>" som person
   **Robot** (räknas aldrig i statistik), Telegram-notiser max 1/typ/10 min. `--simulera` skriver bara i `~/.roborock/sim/`.
+- `js/hem.js` – 🎛 Styr-fliken (iPaden): knappar för Roborock, projektor och lampor via **hemservern** `hem/server.py`
+  (127.0.0.1:5193, utåt BARA `tailscale serve --set-path /hem` → https://…ts.net/hem, aldrig Funnel). Samma
+  inloggning som Spelkontroll (bearer-token, hashfilen i manadsavrakning), FAST whitelist av åtgärder, rate-limit,
+  revisionslogg `hem/data/atgarder.log` (gitignorerad). SwitchBot-token/secret + enhets-id:n ligger ENBART i
+  `~/.husvakten/hem.json`; serveradressen krypterad i valvet (`hem/konfig.json`). Se `hem/README.md`.
+  Roboten startar aldrig härifrån utan ett knapptryck. Vakten: `hem/vakt/server_vakt.ps1` (jobb Husvakten-Hem-Server).
 - `js/hushall.js` – händelselogg (delad krypterad logg + lokala), härledd status, tilldelning, statistik, rättvis fördelning.
 - `js/ml.js` – TF.js + MobileNet v2 + KNN (laddas lat från cdn.jsdelivr.net). Inga API-nycklar.
 - `js/lagring.js` – localStorage + IndexedDB, allt i try/catch.

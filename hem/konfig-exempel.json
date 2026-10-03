@@ -1,0 +1,13 @@
+{
+  "_": "Exempel. Den riktiga filen är ~/.husvakten/hem.json (UTANFÖR repot). Token/secret och deviceId får aldrig ligga i repot.",
+  "switchbot": { "token": "", "secret": "" },
+  "enheter": [
+    { "id": "projektor", "namn": "Projektorn", "ikon": "📽️", "typ": "switchbot", "deviceId": "SWITCHBOT-BOT-ID", "deviceType": "Bot", "kommandon": ["press"], "grupp": "Vardagsrummet", "status": false },
+    { "id": "taklampa", "namn": "Taklampan", "ikon": "💡", "typ": "switchbot", "deviceId": "SWITCHBOT-BULB-ID", "deviceType": "Color Bulb", "kommandon": ["turnOn", "turnOff"], "grupp": "Lampor", "status": true }
+  ],
+  "scener": [
+    { "id": "filmkvall", "namn": "Filmkväll", "ikon": "🍿", "steg": [ { "enhet": "taklampa", "kommando": "turnOff" }, { "enhet": "projektor", "kommando": "press" } ] }
+  ],
+  "rum": { "1": "Sovrummet", "2": "Hallen", "16": "Vardagsrummet" },
+  "lampor_info": "Valfri text som visas i fliken, t.ex. vilket märke lamporna har."
+}
